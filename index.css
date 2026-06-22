@@ -51,17 +51,20 @@
   .sc-price .v small{font-size:12px;color:var(--ink-soft);font-weight:400}
 
   .pucks{display:contents}
-  /* floating glass bubble, centered on the stage then pushed out onto its orbit by --orbit/--a.
-     orbit drives `transform`, pulse drives the individual `scale` property — separate props so they compose */
+  /* floating glass bubble, centered on the stage then pushed onto an elliptical orbit (--rx/--ry/--a) around the showcase.
+     orbit drives `transform` (rotate+translateX+scaleY squish, so the path is an ellipse but the bubble stays round),
+     pulse drives the independent `scale` property, wobble drives the independent `translate` property —
+     three separate transform channels so they compose without fighting each other */
   .puck{position:absolute;left:50%;top:50%;width:80px;height:80px;margin:-40px 0 0 -40px;border-radius:50%;cursor:default;
-    --orbit:170px;--a:0deg;--dur:30s;--pdur:5s;--pdelay:0s;
+    --rx:340px;--ry:190px;--a:0deg;--dur:30s;--pdur:5s;--pdelay:0s;--wdur:8s;--wdelay:0s;
     background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
     box-shadow:0 10px 30px -10px rgba(var(--shadow),.5), inset 0 1px 0 rgba(255,255,255,.55);
     backdrop-filter:blur(8px) saturate(1.2);-webkit-backdrop-filter:blur(8px) saturate(1.2);
-    transform:rotate(var(--a)) translateX(var(--orbit)) rotate(calc(-1 * var(--a)));
+    transform:scaleY(calc(var(--ry) / var(--rx))) rotate(var(--a)) translateX(var(--rx)) rotate(calc(-1 * var(--a))) scaleY(calc(var(--rx) / var(--ry)));
     transition:box-shadow .22s, filter .22s;z-index:5;
-    animation:orbit var(--dur) linear infinite, pulse var(--pdur) ease-in-out infinite;animation-delay:0s, var(--pdelay)}
+    animation:orbit var(--dur) linear infinite, pulse var(--pdur) ease-in-out infinite, wobble var(--wdur) ease-in-out infinite;
+    animation-delay:0s, var(--pdelay), var(--wdelay)}
   .puck .ic{font-size:17px;line-height:1}
   .puck .mini{font:600 9px "DM Sans";letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
   .puck .num{font:700 12px "Space Mono";color:var(--ink);display:none}
@@ -70,16 +73,25 @@
   .puck::after{content:attr(data-label);position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(4px);background:var(--ink);color:#FBF6EA;font:600 11px "DM Sans";white-space:nowrap;padding:6px 10px;border-radius:8px;opacity:0;pointer-events:none;transition:.2s;z-index:9}
   .puck:hover::after{opacity:1;transform:translateX(-50%) translateY(0)}
   .puck.accent{border-color:var(--tint,#E8A33D)}
-  /* each bubble on its own orbit radius (--orbit) + start angle (--a) + speed (--dur); two reverse for variety */
-  .puck.p1{--orbit:160px;--a:20deg;--dur:28s;--pdur:4.6s;--pdelay:0s}
-  .puck.p2{--orbit:200px;--a:145deg;--dur:36s;--pdur:5.4s;--pdelay:.7s;animation-direction:reverse,normal;border-color:var(--cobalt)}
-  .puck.p3{--orbit:150px;--a:255deg;--dur:24s;--pdur:3.9s;--pdelay:1.3s;border-color:var(--jade)}
-  .puck.p4{--orbit:205px;--a:70deg;--dur:40s;--pdur:6s;--pdelay:.4s;animation-direction:reverse,normal;border-color:var(--plum)}
-  .puck.p5{--orbit:178px;--a:312deg;--dur:32s;--pdur:4.9s;--pdelay:1s;border-color:var(--marigold)}
+  /* each bubble on its own elliptical radii (--rx/--ry), start angle (--a), orbit speed (--dur 20-35s) and wobble speed (--wdur)
+     so none of the five ever sync up; --rx/--ry are sized to clear the showcase card and stay inside .hero-stage at every angle */
+  .puck.p1{--rx:340px;--ry:188px;--a:20deg;--dur:26s;--pdur:4.6s;--pdelay:0s;--wdur:7.5s;--wdelay:0s}
+  .puck.p2{--rx:378px;--ry:202px;--a:145deg;--dur:33s;--pdur:5.4s;--pdelay:.7s;--wdur:9.5s;--wdelay:1.6s;animation-direction:reverse,normal,normal;border-color:var(--cobalt)}
+  .puck.p3{--rx:345px;--ry:192px;--a:255deg;--dur:22s;--pdur:3.9s;--pdelay:1.3s;--wdur:6.8s;--wdelay:.9s;border-color:var(--jade)}
+  .puck.p4{--rx:382px;--ry:206px;--a:70deg;--dur:35s;--pdur:6s;--pdelay:.4s;--wdur:10.5s;--wdelay:2.2s;animation-direction:reverse,normal,normal;border-color:var(--plum)}
+  .puck.p5{--rx:356px;--ry:196px;--a:312deg;--dur:29s;--pdur:4.9s;--pdelay:1s;--wdur:8.6s;--wdelay:.4s;border-color:var(--marigold)}
   @keyframes floaty{0%,100%{transform:rotate(-8deg) translateY(0)}50%{transform:rotate(-8deg) translateY(-9px)}}
-  /* orbit one full turn while counter-rotating so the bubble's content stays upright */
-  @keyframes orbit{to{transform:rotate(calc(var(--a) + 360deg)) translateX(var(--orbit)) rotate(calc(-1 * (var(--a) + 360deg)))}}
+  /* one full elliptical turn — same scaleY/rotate/translateX/rotate/scaleY chain as the base transform, just with --a advanced by 360deg */
+  @keyframes orbit{to{transform:scaleY(calc(var(--ry) / var(--rx))) rotate(calc(var(--a) + 360deg)) translateX(var(--rx)) rotate(calc(-1 * (var(--a) + 360deg))) scaleY(calc(var(--rx) / var(--ry)))}}
   @keyframes pulse{0%,100%{scale:.9}50%{scale:1.1}}
+  /* drifts the bubble slightly in and out of its orbit radius on an uneven, non-circular path (independent `translate` prop, composes with orbit + pulse) */
+  @keyframes wobble{
+    0%,100%{translate:0 0}
+    22%{translate:7px -5px}
+    41%{translate:-6px 4px}
+    63%{translate:5px 6px}
+    79%{translate:-4px -6px}
+  }
 
   .wall-head{display:flex;align-items:center;gap:12px;margin:0 4px 8px}
   .wall-head h2{font-family:"Space Grotesk";font-weight:600;font-size:16px;margin:0;letter-spacing:-.3px}
@@ -228,7 +240,7 @@
   @media(max-width:1023px){
     .hero{height:auto}.hero-stage{min-height:0;padding:32px 0 6px}
     .pucks{display:flex !important;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:14px}
-    .puck{position:static !important;left:auto;top:auto;margin:0 !important;animation:none !important;transform:none !important;scale:none !important;
+    .puck{position:static !important;left:auto;top:auto;margin:0 !important;animation:none !important;transform:none !important;scale:none !important;translate:none !important;
       background:rgba(251,246,234,.94);backdrop-filter:none;-webkit-backdrop-filter:none}
     .showcase{width:min(540px,92%)}
   }
@@ -236,4 +248,4 @@
     .showcase{height:240px}.puck{width:68px;height:68px}.puck .ic{font-size:14px}
     .wbanner{flex-direction:column;min-height:0;text-align:center}.winfo{flex:none;max-width:100%}.wprev{height:170px}
   }
-  @media(prefers-reduced-motion:reduce){.hero-img,.puck{animation:none}*{transition-duration:.001ms!important}}
+  @media(prefers-reduced-motion:reduce){.hero-img,.puck{animation:none;translate:none}*{transition-duration:.001ms!important}}
