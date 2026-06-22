@@ -27,12 +27,14 @@
   .total .v{font-family:"Space Mono";font-weight:700;font-size:20px;color:var(--ink)}
   .total .v small{font-size:11px;color:var(--ink-soft);font-weight:400;margin-left:3px}
 
-  .hero{position:relative;margin:2px 0 14px;height:auto;min-height:760px;display:flex;align-items:center;justify-content:center}
+  .hero{position:relative;margin:2px 0 14px;height:auto;min-height:840px;display:flex;align-items:center;justify-content:center}
   .hero-eyebrow{position:absolute;top:4px;left:4px;display:flex;align-items:center;gap:9px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;z-index:8}
   .hero-eyebrow .pin{width:8px;height:8px;border-radius:50%;background:var(--tint,#E8A33D)}
-  /* orbit container: bubbles are absolutely positioned against this, transform-origin'd and centered on the showcase.
-     taller than the showcase alone so the elliptical orbit (rx>=420px/ry>=280px, sized to clear the card on every side) fits inside it */
-  .hero-stage{position:relative;width:100%;min-height:760px;display:flex;flex-direction:column;align-items:center;justify-content:center;transform-origin:center center}
+  /* orbit container: the single source of truth for orbit-center alignment. .showcase is centered inside this box by the
+     flex rules below, and .pucks (the orbit's containing block, see below) is pinned edge-to-edge to this same box via
+     inset:0 — so the orbit center and the showcase center are always the same point, by construction, not by coincidence.
+     taller than the showcase alone so the elliptical orbit (rx>=500px/ry>=320px, sized to clear the card on every side) fits inside it */
+  .hero-stage{position:relative;width:100%;min-height:840px;display:flex;flex-direction:column;align-items:center;justify-content:center;transform-origin:50% 50%}
 
   /* compact, strongly-rounded weapon showcase — bubbles live OUTSIDE it */
   .showcase{position:relative;z-index:2;width:clamp(320px,44%,540px);height:282px;border-radius:46px;overflow:hidden;
@@ -51,13 +53,18 @@
   .sc-price .v{font-family:"Space Mono";font-weight:700;font-size:clamp(20px,2.2vw,28px);line-height:1;color:var(--ink)}
   .sc-price .v small{font-size:12px;color:var(--ink-soft);font-weight:400}
 
-  .pucks{display:contents}
-  /* floating glass bubble, centered on the stage then pushed onto an elliptical orbit (--rx/--ry/--a) around the showcase.
-     orbit drives `transform` (rotate+translateX+scaleY squish, so the path is an ellipse but the bubble stays round),
-     pulse drives the independent `scale` property, wobble drives the independent `translate` property —
+  /* orbit's containing block: pinned edge-to-edge to .hero-stage (its nearest positioned ancestor) via inset:0, so
+     every .puck's left:50%/top:50% resolves against the exact same box .showcase is centered in — no display:contents
+     ambiguity, no separate coordinate space. Transparent + pointer-events:none so it never blocks clicks on .showcase;
+     individual .puck bubbles opt back into pointer-events so hover labels still work */
+  .pucks{position:absolute;inset:0;pointer-events:none}
+  /* floating glass bubble: starts at position:absolute, top:50%, left:50% (dead center of .pucks/.hero-stage) with a
+     -40px/-40px margin to center the 80x80 box on that point — THEN the orbit transform below pushes it out onto the
+     ellipse. orbit drives `transform` (rotate+translateX+scaleY squish, so the path is an ellipse but the bubble stays
+     round), pulse drives the independent `scale` property, wobble drives the independent `translate` property —
      three separate transform channels so they compose without fighting each other */
-  .puck{position:absolute;left:50%;top:50%;width:80px;height:80px;margin:-40px 0 0 -40px;border-radius:50%;cursor:default;
-    --rx:424px;--ry:284px;--a:0deg;--dur:30s;--pdur:5s;--pdelay:0s;--wdur:8s;--wdelay:0s;
+  .puck{position:absolute;left:50%;top:50%;width:80px;height:80px;margin:-40px 0 0 -40px;border-radius:50%;cursor:default;pointer-events:auto;
+    --rx:504px;--ry:324px;--a:0deg;--dur:30s;--pdur:5s;--pdelay:0s;--wdur:8s;--wdelay:0s;
     background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
     box-shadow:0 10px 30px -10px rgba(var(--shadow),.5), inset 0 1px 0 rgba(255,255,255,.55);
@@ -75,13 +82,13 @@
   .puck:hover::after{opacity:1;transform:translateX(-50%) translateY(0)}
   .puck.accent{border-color:var(--tint,#E8A33D)}
   /* each bubble on its own elliptical radii (--rx/--ry), start angle (--a), orbit speed (--dur 20-35s) and wobble speed (--wdur)
-     so none of the five ever sync up. rx >=420px, ry >=280px for every puck — well clear of the showcase's
+     so none of the five ever sync up. rx >=500px, ry >=320px for every puck — well clear of the showcase's
      ~270x141 half-width/height (46px corner radius) plus the puck's own 40px radius, at every angle around the orbit */
-  .puck.p1{--rx:420px;--ry:280px;--a:20deg;--dur:26s;--pdur:4.6s;--pdelay:0s;--wdur:7.5s;--wdelay:0s}
-  .puck.p2{--rx:436px;--ry:296px;--a:145deg;--dur:33s;--pdur:5.4s;--pdelay:.7s;--wdur:9.5s;--wdelay:1.6s;animation-direction:reverse,normal,normal;border-color:var(--cobalt)}
-  .puck.p3{--rx:424px;--ry:284px;--a:255deg;--dur:22s;--pdur:3.9s;--pdelay:1.3s;--wdur:6.8s;--wdelay:.9s;border-color:var(--jade)}
-  .puck.p4{--rx:432px;--ry:292px;--a:70deg;--dur:35s;--pdur:6s;--pdelay:.4s;--wdur:10.5s;--wdelay:2.2s;animation-direction:reverse,normal,normal;border-color:var(--plum)}
-  .puck.p5{--rx:428px;--ry:288px;--a:312deg;--dur:29s;--pdur:4.9s;--pdelay:1s;--wdur:8.6s;--wdelay:.4s;border-color:var(--marigold)}
+  .puck.p1{--rx:504px;--ry:324px;--a:20deg;--dur:26s;--pdur:4.6s;--pdelay:0s;--wdur:7.5s;--wdelay:0s}
+  .puck.p2{--rx:524px;--ry:344px;--a:145deg;--dur:33s;--pdur:5.4s;--pdelay:.7s;--wdur:9.5s;--wdelay:1.6s;animation-direction:reverse,normal,normal;border-color:var(--cobalt)}
+  .puck.p3{--rx:510px;--ry:330px;--a:255deg;--dur:22s;--pdur:3.9s;--pdelay:1.3s;--wdur:6.8s;--wdelay:.9s;border-color:var(--jade)}
+  .puck.p4{--rx:520px;--ry:340px;--a:70deg;--dur:35s;--pdur:6s;--pdelay:.4s;--wdur:10.5s;--wdelay:2.2s;animation-direction:reverse,normal,normal;border-color:var(--plum)}
+  .puck.p5{--rx:514px;--ry:334px;--a:312deg;--dur:29s;--pdur:4.9s;--pdelay:1s;--wdur:8.6s;--wdelay:.4s;border-color:var(--marigold)}
   @keyframes floaty{0%,100%{transform:rotate(-8deg) translateY(0)}50%{transform:rotate(-8deg) translateY(-9px)}}
   /* one full elliptical turn — same scaleY/rotate/translateX/rotate/scaleY chain as the base transform, just with --a advanced by 360deg */
   @keyframes orbit{to{transform:scaleY(calc(var(--ry) / var(--rx))) rotate(calc(var(--a) + 360deg)) translateX(var(--rx)) rotate(calc(-1 * (var(--a) + 360deg))) scaleY(calc(var(--rx) / var(--ry)))}}
@@ -241,7 +248,7 @@
 
   @media(max-width:1023px){
     .hero{height:auto}.hero-stage{min-height:0;padding:32px 0 6px}
-    .pucks{display:flex !important;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:14px}
+    .pucks{position:static !important;inset:auto;display:flex !important;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:14px}
     .puck{position:static !important;left:auto;top:auto;margin:0 !important;animation:none !important;transform:none !important;scale:none !important;translate:none !important;
       background:rgba(251,246,234,.94);backdrop-filter:none;-webkit-backdrop-filter:none}
     .showcase{width:min(540px,92%)}
