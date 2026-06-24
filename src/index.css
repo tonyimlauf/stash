@@ -69,9 +69,11 @@
   .puck::after{content:attr(data-label);position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(4px);background:var(--ink);color:#FBF6EA;font:600 11px "DM Sans";white-space:nowrap;padding:6px 10px;border-radius:8px;opacity:0;pointer-events:none;transition:.2s;z-index:9}
   .puck:hover::after{opacity:1;transform:translateX(-50%) translateY(0)}
   .puck.accent{border-color:var(--tint,#E8A33D)}
-  /* true circular orbits: rotate(start) translateX(R) rotate(-start) keeps each bubble a fixed R from center at
-     all times — no translateY so there's no diagonal hypotenuse fling. R=250-265px, start angles 72° apart so
-     the five bubbles sit evenly around the card. Unique durations (20-35s) + delays so none ever sync up. */
+  /* true elliptical orbits matching the 540x282 card shape. A single rotate()+translate() can only trace a CIRCLE
+     (R*cos, R*sin) — to get an ellipse (rx*cos, ry*sin) we sample the path at 30-degree steps and emit explicit
+     translate(x,y) offsets per keyframe. The puck never rotates or scales, so it stays perfectly round (no squish).
+     rx~340-352 / ry~210-222 keeps an even ~30-42px gap to the card on ALL four sides. Each puck starts 72deg apart
+     (even spread) with a unique duration (20-35s) + delay so none ever sync up. */
   .puck.p1{animation:orbit-p1 24s linear infinite, pulse 4.6s ease-in-out infinite, wobble 7.5s ease-in-out infinite;animation-delay:0s, 0s, 0s}
   .puck.p2{animation:orbit-p2 31s linear infinite, pulse 5.4s ease-in-out infinite, wobble 9.5s ease-in-out infinite;animation-delay:2s, .7s, 1.6s;border-color:var(--cobalt)}
   .puck.p3{animation:orbit-p3 21s linear infinite, pulse 3.9s ease-in-out infinite, wobble 6.8s ease-in-out infinite;animation-delay:4s, 1.3s, .9s;border-color:var(--jade)}
@@ -79,24 +81,79 @@
   .puck.p5{animation:orbit-p5 28s linear infinite, pulse 4.9s ease-in-out infinite, wobble 8.6s ease-in-out infinite;animation-delay:3s, 1s, .4s;border-color:var(--marigold)}
   @keyframes floaty{0%,100%{transform:rotate(-8deg) translateY(0)}50%{transform:rotate(-8deg) translateY(-9px)}}
   @keyframes orbit-p1{
-    from{transform:translate(-50%, -50%) rotate(0deg) translateX(250px) rotate(0deg)}
-    to{transform:translate(-50%, -50%) rotate(360deg) translateX(250px) rotate(-360deg)}
+    from{transform:translate(-50%,-50%) translate(340.0px, 0.0px)}
+    8%{transform:translate(-50%,-50%) translate(294.4px, 105.0px)}
+    17%{transform:translate(-50%,-50%) translate(170.0px, 181.9px)}
+    25%{transform:translate(-50%,-50%) translate(0.0px, 210.0px)}
+    33%{transform:translate(-50%,-50%) translate(-170.0px, 181.9px)}
+    42%{transform:translate(-50%,-50%) translate(-294.4px, 105.0px)}
+    50%{transform:translate(-50%,-50%) translate(-340.0px, 0.0px)}
+    58%{transform:translate(-50%,-50%) translate(-294.4px, -105.0px)}
+    67%{transform:translate(-50%,-50%) translate(-170.0px, -181.9px)}
+    75%{transform:translate(-50%,-50%) translate(-0.0px, -210.0px)}
+    83%{transform:translate(-50%,-50%) translate(170.0px, -181.9px)}
+    92%{transform:translate(-50%,-50%) translate(294.4px, -105.0px)}
+    to{transform:translate(-50%,-50%) translate(340.0px, -0.0px)}
   }
   @keyframes orbit-p2{
-    from{transform:translate(-50%, -50%) rotate(72deg) translateX(265px) rotate(-72deg)}
-    to{transform:translate(-50%, -50%) rotate(432deg) translateX(265px) rotate(-432deg)}
+    from{transform:translate(-50%,-50%) translate(108.8px, 211.1px)}
+    8%{transform:translate(-50%,-50%) translate(-73.2px, 217.1px)}
+    17%{transform:translate(-50%,-50%) translate(-235.5px, 165.0px)}
+    25%{transform:translate(-50%,-50%) translate(-334.8px, 68.6px)}
+    33%{transform:translate(-50%,-50%) translate(-344.3px, -46.2px)}
+    42%{transform:translate(-50%,-50%) translate(-261.6px, -148.5px)}
+    50%{transform:translate(-50%,-50%) translate(-108.8px, -211.1px)}
+    58%{transform:translate(-50%,-50%) translate(73.2px, -217.1px)}
+    67%{transform:translate(-50%,-50%) translate(235.5px, -165.0px)}
+    75%{transform:translate(-50%,-50%) translate(334.8px, -68.6px)}
+    83%{transform:translate(-50%,-50%) translate(344.3px, 46.2px)}
+    92%{transform:translate(-50%,-50%) translate(261.6px, 148.5px)}
+    to{transform:translate(-50%,-50%) translate(108.8px, 211.1px)}
   }
   @keyframes orbit-p3{
-    from{transform:translate(-50%, -50%) rotate(144deg) translateX(255px) rotate(-144deg)}
-    to{transform:translate(-50%, -50%) rotate(504deg) translateX(255px) rotate(-504deg)}
+    from{transform:translate(-50%,-50%) translate(-278.3px, 125.8px)}
+    8%{transform:translate(-50%,-50%) translate(-342.1px, 22.4px)}
+    17%{transform:translate(-50%,-50%) translate(-314.3px, -87.0px)}
+    25%{transform:translate(-50%,-50%) translate(-202.2px, -173.1px)}
+    33%{transform:translate(-50%,-50%) translate(-36.0px, -212.8px)}
+    42%{transform:translate(-50%,-50%) translate(139.9px, -195.5px)}
+    50%{transform:translate(-50%,-50%) translate(278.3px, -125.8px)}
+    58%{transform:translate(-50%,-50%) translate(342.1px, -22.4px)}
+    67%{transform:translate(-50%,-50%) translate(314.3px, 87.0px)}
+    75%{transform:translate(-50%,-50%) translate(202.2px, 173.1px)}
+    83%{transform:translate(-50%,-50%) translate(36.0px, 212.8px)}
+    92%{transform:translate(-50%,-50%) translate(-139.9px, 195.5px)}
+    to{transform:translate(-50%,-50%) translate(-278.3px, 125.8px)}
   }
   @keyframes orbit-p4{
-    from{transform:translate(-50%, -50%) rotate(216deg) translateX(260px) rotate(-216deg)}
-    to{transform:translate(-50%, -50%) rotate(576deg) translateX(260px) rotate(-576deg)}
+    from{transform:translate(-50%,-50%) translate(-281.5px, -128.1px)}
+    8%{transform:translate(-50%,-50%) translate(-141.5px, -199.2px)}
+    17%{transform:translate(-50%,-50%) translate(36.4px, -216.8px)}
+    25%{transform:translate(-50%,-50%) translate(204.5px, -176.4px)}
+    33%{transform:translate(-50%,-50%) translate(317.9px, -88.7px)}
+    42%{transform:translate(-50%,-50%) translate(346.1px, 22.8px)}
+    50%{transform:translate(-50%,-50%) translate(281.5px, 128.1px)}
+    58%{transform:translate(-50%,-50%) translate(141.5px, 199.2px)}
+    67%{transform:translate(-50%,-50%) translate(-36.4px, 216.8px)}
+    75%{transform:translate(-50%,-50%) translate(-204.5px, 176.4px)}
+    83%{transform:translate(-50%,-50%) translate(-317.9px, 88.7px)}
+    92%{transform:translate(-50%,-50%) translate(-346.1px, -22.8px)}
+    to{transform:translate(-50%,-50%) translate(-281.5px, -128.1px)}
   }
   @keyframes orbit-p5{
-    from{transform:translate(-50%, -50%) rotate(288deg) translateX(250px) rotate(-288deg)}
-    to{transform:translate(-50%, -50%) rotate(648deg) translateX(250px) rotate(-648deg)}
+    from{transform:translate(-50%,-50%) translate(105.7px, -201.6px)}
+    8%{transform:translate(-50%,-50%) translate(254.2px, -141.9px)}
+    17%{transform:translate(-50%,-50%) translate(334.5px, -44.1px)}
+    25%{transform:translate(-50%,-50%) translate(325.3px, 65.5px)}
+    33%{transform:translate(-50%,-50%) translate(228.8px, 157.5px)}
+    42%{transform:translate(-50%,-50%) translate(71.1px, 207.4px)}
+    50%{transform:translate(-50%,-50%) translate(-105.7px, 201.6px)}
+    58%{transform:translate(-50%,-50%) translate(-254.2px, 141.9px)}
+    67%{transform:translate(-50%,-50%) translate(-334.5px, 44.1px)}
+    75%{transform:translate(-50%,-50%) translate(-325.3px, -65.5px)}
+    83%{transform:translate(-50%,-50%) translate(-228.8px, -157.5px)}
+    92%{transform:translate(-50%,-50%) translate(-71.1px, -207.4px)}
+    to{transform:translate(-50%,-50%) translate(105.7px, -201.6px)}
   }
   /* subtle scale pulse, independent of the orbit transform */
   @keyframes pulse{0%,100%{scale:.94}50%{scale:1.06}}
