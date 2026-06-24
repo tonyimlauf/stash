@@ -27,11 +27,11 @@
   .total .v{font-family:"Space Mono";font-weight:700;font-size:20px;color:var(--ink)}
   .total .v small{font-size:11px;color:var(--ink-soft);font-weight:400;margin-left:3px}
 
-  .hero{position:relative;margin:2px 0 14px;height:auto;min-height:840px;display:flex;align-items:center;justify-content:center}
+  .hero{position:relative;margin:2px 0 14px;height:auto;min-height:560px;display:flex;align-items:center;justify-content:center}
   .hero-eyebrow{position:absolute;top:4px;left:4px;display:flex;align-items:center;gap:9px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;z-index:8}
   .hero-eyebrow .pin{width:8px;height:8px;border-radius:50%;background:var(--tint,#E8A33D)}
   /* orbit container — every .puck is positioned absolute against this single ancestor */
-  .hero-stage{position:relative;width:100%;min-height:1080px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .hero-stage{position:relative;width:100%;min-height:560px;display:flex;flex-direction:column;align-items:center;justify-content:center}
 
   /* compact, strongly-rounded weapon showcase — bubbles live OUTSIDE it */
   .showcase{position:relative;z-index:2;width:clamp(320px,44%,540px);height:282px;border-radius:46px;overflow:hidden;
@@ -69,10 +69,9 @@
   .puck::after{content:attr(data-label);position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(4px);background:var(--ink);color:#FBF6EA;font:600 11px "DM Sans";white-space:nowrap;padding:6px 10px;border-radius:8px;opacity:0;pointer-events:none;transition:.2s;z-index:9}
   .puck:hover::after{opacity:1;transform:translateX(-50%) translateY(0)}
   .puck.accent{border-color:var(--tint,#E8A33D)}
-  /* showcase is 540x282px (270/141 half-width/height) — every translateX/translateY pair below puts the puck's
-     orbit radius (hypot(X,Y)) at 395-475px, comfortably outside the card on every side of the circle, with signs
-     alternating so the five bubbles start spread around all four quadrants. unique duration (20-35s) + delay per
-     puck so none of them ever sync up. */
+  /* showcase is 540x282px — translateX/Y values put each bubble's center ~320-360px / 180-200px from the stage
+     center, placing the bubble edge 30-60px from the card edge. Signs alternate so bubbles start spread across
+     all four quadrants. Unique durations (20-35s) + delays so none ever sync up. */
   .puck.p1{animation:orbit-p1 24s linear infinite, pulse 4.6s ease-in-out infinite, wobble 7.5s ease-in-out infinite;animation-delay:0s, 0s, 0s}
   .puck.p2{animation:orbit-p2 31s linear infinite, pulse 5.4s ease-in-out infinite, wobble 9.5s ease-in-out infinite;animation-delay:2s, .7s, 1.6s;border-color:var(--cobalt)}
   .puck.p3{animation:orbit-p3 21s linear infinite, pulse 3.9s ease-in-out infinite, wobble 6.8s ease-in-out infinite;animation-delay:4s, 1.3s, .9s;border-color:var(--jade)}
@@ -80,34 +79,34 @@
   .puck.p5{animation:orbit-p5 28s linear infinite, pulse 4.9s ease-in-out infinite, wobble 8.6s ease-in-out infinite;animation-delay:3s, 1s, .4s;border-color:var(--marigold)}
   @keyframes floaty{0%,100%{transform:rotate(-8deg) translateY(0)}50%{transform:rotate(-8deg) translateY(-9px)}}
   @keyframes orbit-p1{
-    from{transform:translate(-50%, -50%) rotate(0deg) translateX(348px) translateY(-188px) rotate(0deg)}
-    to{transform:translate(-50%, -50%) rotate(360deg) translateX(348px) translateY(-188px) rotate(-360deg)}
+    from{transform:translate(-50%, -50%) rotate(0deg) translateX(322px) translateY(-182px) rotate(0deg)}
+    to{transform:translate(-50%, -50%) rotate(360deg) translateX(322px) translateY(-182px) rotate(-360deg)}
   }
   @keyframes orbit-p2{
-    from{transform:translate(-50%, -50%) rotate(0deg) translateX(-372px) translateY(204px) rotate(0deg)}
-    to{transform:translate(-50%, -50%) rotate(360deg) translateX(-372px) translateY(204px) rotate(-360deg)}
+    from{transform:translate(-50%, -50%) rotate(0deg) translateX(-344px) translateY(192px) rotate(0deg)}
+    to{transform:translate(-50%, -50%) rotate(360deg) translateX(-344px) translateY(192px) rotate(-360deg)}
   }
   @keyframes orbit-p3{
-    from{transform:translate(-50%, -50%) rotate(0deg) translateX(396px) translateY(222px) rotate(0deg)}
-    to{transform:translate(-50%, -50%) rotate(360deg) translateX(396px) translateY(222px) rotate(-360deg)}
+    from{transform:translate(-50%, -50%) rotate(0deg) translateX(358px) translateY(198px) rotate(0deg)}
+    to{transform:translate(-50%, -50%) rotate(360deg) translateX(358px) translateY(198px) rotate(-360deg)}
   }
   @keyframes orbit-p4{
-    from{transform:translate(-50%, -50%) rotate(0deg) translateX(-384px) translateY(-212px) rotate(0deg)}
-    to{transform:translate(-50%, -50%) rotate(360deg) translateX(-384px) translateY(-212px) rotate(-360deg)}
+    from{transform:translate(-50%, -50%) rotate(0deg) translateX(-336px) translateY(-186px) rotate(0deg)}
+    to{transform:translate(-50%, -50%) rotate(360deg) translateX(-336px) translateY(-186px) rotate(-360deg)}
   }
   @keyframes orbit-p5{
-    from{transform:translate(-50%, -50%) rotate(0deg) translateX(414px) translateY(-232px) rotate(0deg)}
-    to{transform:translate(-50%, -50%) rotate(360deg) translateX(414px) translateY(-232px) rotate(-360deg)}
+    from{transform:translate(-50%, -50%) rotate(0deg) translateX(350px) translateY(-196px) rotate(0deg)}
+    to{transform:translate(-50%, -50%) rotate(360deg) translateX(350px) translateY(-196px) rotate(-360deg)}
   }
   /* subtle scale pulse, independent of the orbit transform */
   @keyframes pulse{0%,100%{scale:.94}50%{scale:1.06}}
-  /* organic in/out drift on top of the orbit, independent `translate` property */
+  /* gentle drift on top of the orbit, independent `translate` property */
   @keyframes wobble{
     0%,100%{translate:0 0}
-    22%{translate:7px -5px}
-    41%{translate:-6px 4px}
-    63%{translate:5px 6px}
-    79%{translate:-4px -6px}
+    22%{translate:4px -3px}
+    41%{translate:-3px 3px}
+    63%{translate:3px 3px}
+    79%{translate:-3px -3px}
   }
 
   .wall-head{display:flex;align-items:center;gap:12px;margin:0 4px 8px}
