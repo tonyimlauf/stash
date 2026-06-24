@@ -55,12 +55,12 @@
      centering AND the rotate()+translateX()+translateY()+rotate(-) orbit in one transform, so there's only ever
      one `transform` driver (no fighting with a base transform). pulse (scale) and wobble (translate) are
      independent CSS properties, so they layer on top without touching the orbit transform at all. */
-  .puck{position:absolute;top:50%;left:50%;width:80px;height:80px;border-radius:50%;cursor:default;pointer-events:auto;
+  .puck{position:absolute;top:0;left:0;width:80px;height:80px;border-radius:50%;cursor:default;pointer-events:auto;
     background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
     box-shadow:0 10px 30px -10px rgba(var(--shadow),.5), inset 0 1px 0 rgba(255,255,255,.55);
     backdrop-filter:blur(8px) saturate(1.2);-webkit-backdrop-filter:blur(8px) saturate(1.2);
-    transition:box-shadow .22s, filter .22s;z-index:5}
+    transition:box-shadow .22s, filter .22s;z-index:5;will-change:transform}
   .puck .ic{font-size:17px;line-height:1}
   .puck .mini{font:600 9px "DM Sans";letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
   .puck .num{font:700 12px "Space Mono";color:var(--ink);display:none}
@@ -69,50 +69,14 @@
   .puck::after{content:attr(data-label);position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(4px);background:var(--ink);color:#FBF6EA;font:600 11px "DM Sans";white-space:nowrap;padding:6px 10px;border-radius:8px;opacity:0;pointer-events:none;transition:.2s;z-index:9}
   .puck:hover::after{opacity:1;transform:translateX(-50%) translateY(0)}
   .puck.accent{border-color:var(--tint,#E8A33D)}
-  /* ROUNDED-RECTANGLE orbit. The card is a 540x282 rounded rect (radius 46), NOT an ellipse — an elliptical
-     path dips inside the card corners. Instead every puck follows the card's OWN outline offset outward by a
-     constant 55px gap (puck radius 40 + 15px clearance, so the puck EDGE never touches the card): straight
-     edges at x=+-325 / y=+-196, corner arcs radius 101 centred on the card corners
-     (+-224,+-95). Sampled by arc length so speed is constant. All 5 pucks share this one path (orbit-rect) and
-     are spread evenly around it via negative animation-delay; each has a unique duration so they never sync.
-     The puck never rotates/scales, so it stays perfectly round. */
-  .puck.p1{animation:orbit-rect 24s linear infinite, pulse 4.6s ease-in-out infinite, wobble 7.5s ease-in-out infinite;animation-delay:0s, 0s, 0s}
-  .puck.p2{animation:orbit-rect 31s linear infinite, pulse 5.4s ease-in-out infinite, wobble 9.5s ease-in-out infinite;animation-delay:-6.2s, .7s, 1.6s;border-color:var(--cobalt)}
-  .puck.p3{animation:orbit-rect 21s linear infinite, pulse 3.9s ease-in-out infinite, wobble 6.8s ease-in-out infinite;animation-delay:-8.4s, 1.3s, .9s;border-color:var(--jade)}
-  .puck.p4{animation:orbit-rect 35s linear infinite, pulse 6s ease-in-out infinite, wobble 10.5s ease-in-out infinite;animation-delay:-21s, .4s, 2.2s;border-color:var(--plum)}
-  .puck.p5{animation:orbit-rect 28s linear infinite, pulse 4.9s ease-in-out infinite, wobble 8.6s ease-in-out infinite;animation-delay:-22.4s, 1s, .4s;border-color:var(--marigold)}
+  /* JS physics drives position via inline transform. pulse (scale) and wobble (translate) are independent
+     CSS properties that layer on top without conflicting with the JS-controlled `transform`. */
+  .puck.p1{animation:pulse 4.6s ease-in-out infinite, wobble 7.5s ease-in-out infinite;animation-delay:0s, 0s}
+  .puck.p2{animation:pulse 5.4s ease-in-out infinite, wobble 9.5s ease-in-out infinite;animation-delay:.7s, 1.6s;border-color:var(--cobalt)}
+  .puck.p3{animation:pulse 3.9s ease-in-out infinite, wobble 6.8s ease-in-out infinite;animation-delay:1.3s, .9s;border-color:var(--jade)}
+  .puck.p4{animation:pulse 6s ease-in-out infinite, wobble 10.5s ease-in-out infinite;animation-delay:.4s, 2.2s;border-color:var(--plum)}
+  .puck.p5{animation:pulse 4.9s ease-in-out infinite, wobble 8.6s ease-in-out infinite;animation-delay:1s, .4s;border-color:var(--marigold)}
   @keyframes floaty{0%,100%{transform:rotate(-8deg) translateY(0)}50%{transform:rotate(-8deg) translateY(-9px)}}
-  @keyframes orbit-rect{
-    from{transform:translate(-50%,-50%) translate(325.0px,0.0px)}
-    5.23%{transform:translate(-50%,-50%) translate(325.0px,95.0px)}
-    6.69%{transform:translate(-50%,-50%) translate(321.6px,121.1px)}
-    8.15%{transform:translate(-50%,-50%) translate(311.5px,145.5px)}
-    9.60%{transform:translate(-50%,-50%) translate(295.4px,166.4px)}
-    11.06%{transform:translate(-50%,-50%) translate(274.5px,182.5px)}
-    12.51%{transform:translate(-50%,-50%) translate(250.1px,192.6px)}
-    13.97%{transform:translate(-50%,-50%) translate(224.0px,196.0px)}
-    38.65%{transform:translate(-50%,-50%) translate(-224.0px,196.0px)}
-    40.10%{transform:translate(-50%,-50%) translate(-250.1px,192.6px)}
-    41.56%{transform:translate(-50%,-50%) translate(-274.5px,182.5px)}
-    43.01%{transform:translate(-50%,-50%) translate(-295.4px,166.4px)}
-    44.47%{transform:translate(-50%,-50%) translate(-311.5px,145.5px)}
-    45.93%{transform:translate(-50%,-50%) translate(-321.6px,121.1px)}
-    47.38%{transform:translate(-50%,-50%) translate(-325.0px,95.0px)}
-    57.85%{transform:translate(-50%,-50%) translate(-325.0px,-95.0px)}
-    59.30%{transform:translate(-50%,-50%) translate(-321.6px,-121.1px)}
-    60.76%{transform:translate(-50%,-50%) translate(-311.5px,-145.5px)}
-    62.22%{transform:translate(-50%,-50%) translate(-295.4px,-166.4px)}
-    63.67%{transform:translate(-50%,-50%) translate(-274.5px,-182.5px)}
-    65.13%{transform:translate(-50%,-50%) translate(-250.1px,-192.6px)}
-    66.59%{transform:translate(-50%,-50%) translate(-224.0px,-196.0px)}
-    91.26%{transform:translate(-50%,-50%) translate(224.0px,-196.0px)}
-    92.72%{transform:translate(-50%,-50%) translate(250.1px,-192.6px)}
-    94.17%{transform:translate(-50%,-50%) translate(274.5px,-182.5px)}
-    95.63%{transform:translate(-50%,-50%) translate(295.4px,-166.4px)}
-    97.09%{transform:translate(-50%,-50%) translate(311.5px,-145.5px)}
-    98.54%{transform:translate(-50%,-50%) translate(321.6px,-121.1px)}
-    to{transform:translate(-50%,-50%) translate(325.0px,-95.0px)}
-  }
   /* subtle scale pulse, independent of the orbit transform */
   @keyframes pulse{0%,100%{scale:.94}50%{scale:1.06}}
   /* gentle drift on top of the orbit, independent `translate` property */

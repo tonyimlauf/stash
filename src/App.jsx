@@ -139,6 +139,10 @@ export default function App() {
   const [colH, setColH] = useState(null)
   const gridRef = useRef(null)
   const modeExitRef = useRef(null) // { mode, search, time } snapshot taken when leaving a skin-picker mode
+  const stageRef = useRef(null)
+  const showcaseRef = useRef(null)
+  const puckEls = useRef([])   // [el0..el4] set via callback refs in renderShowcase
+  const dimsRef = useRef({ sW: 0, sH: 0, cW: 0, cH: 0 })
 
   // load data once
   useEffect(() => {
@@ -197,6 +201,148 @@ export default function App() {
     }
     setBrowseAll(toAll)
   }
+
+  // ---- JS physics for puck bubbles (desktop only) ----
+  const isMobile = vw <= 1023
+  useEffect(() => {
+    if (isMobile || !featuredW) return
+    const stage = stageRef.current
+    const card = showcaseRef.current
+    if (!stage || !card) return
+
+    // measure stage and card once; ResizeObserver keeps dims fresh
+    const measure = () => {
+      dimsRef.current = {
+        sW: stage.offsetWidth,
+        sH: stage.offsetHeight,
+        cW: card.offsetWidth,
+        cH: card.offsetHeight,
+      }
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(stage); ro.observe(card)
+
+    const PUCK_R = 40
+    const CARD_RX = 46  // card CSS border-radius
+
+    // 5 start positions evenly spread on the outer rounded-rect path (gap ~55px from card)
+    const initPos = [[325,0],[95,196],[-258,190],[-325,0],[95,-196]]
+    // clockwise tangent at each start position
+    const initTan = [[0,1],[-1,0],[-0.62,-0.78],[0,-1],[1,0]]
+    const initSpd = [65, 58, 72, 60, 55]
+
+    const bodies = initPos.map(([x,y],i) => {
+      const [tx,ty] = initTan[i]
+      const spd = initSpd[i]
+      // small random jitter to tangent angle so pucks diverge
+      const jitter = (Math.random()-0.5)*0.5
+      const c = Math.cos(jitter), s = Math.sin(jitter)
+      return { x, y, vx:(tx*c - ty*s)*spd, vy:(tx*s + ty*c)*spd }
+    })
+
+    // SDF of rounded rect with half-extents (hx+CARD_RX, hy+CARD_RX), corner-radius CARD_RX
+    function cardSDF(px, py, cW, cH) {
+      const hx = cW/2 - CARD_RX, hy = cH/2 - CARD_RX
+      const qx = Math.abs(px) - hx, qy = Math.abs(py) - hy
+      return Math.sqrt(Math.max(qx,0)**2 + Math.max(qy,0)**2) - CARD_RX
+    }
+
+    // outward surface normal of the rounded rect at puck center
+    function cardNormal(px, py, cW, cH) {
+      const hx = cW/2 - CARD_RX, hy = cH/2 - CARD_RX
+      const qx = Math.abs(px) - hx, qy = Math.abs(py) - hy
+      if (qx > 0 && qy > 0) {
+        const len = Math.sqrt(qx*qx + qy*qy) || 1
+        return [qx/len * Math.sign(px), qy/len * Math.sign(py)]
+      }
+      return qx >= qy ? [Math.sign(px), 0] : [0, Math.sign(py)]
+    }
+
+    let lastTs = null
+    let rafId
+
+    function loop(ts) {
+      if (lastTs === null) lastTs = ts
+      const dt = Math.min((ts - lastTs) / 1000, 0.05)
+      lastTs = ts
+
+      const { sW, sH, cW, cH } = dimsRef.current
+      const halfW = sW/2 - PUCK_R
+      const halfH = sH/2 - PUCK_R
+
+      for (const b of bodies) {
+        b.x += b.vx * dt
+        b.y += b.vy * dt
+
+        // stage bounds — elastic bounce
+        if (b.x < -halfW) { b.x = -halfW; b.vx = Math.abs(b.vx) }
+        if (b.x >  halfW) { b.x =  halfW; b.vx = -Math.abs(b.vx) }
+        if (b.y < -halfH) { b.y = -halfH; b.vy = Math.abs(b.vy) }
+        if (b.y >  halfH) { b.y =  halfH; b.vy = -Math.abs(b.vy) }
+
+        // card bounce — resolve against card SDF
+        const sdf = cardSDF(b.x, b.y, cW, cH)
+        if (sdf < PUCK_R) {
+          const pen = PUCK_R - sdf
+          const [nx, ny] = cardNormal(b.x, b.y, cW, cH)
+          b.x += nx * pen; b.y += ny * pen
+          const dot = b.vx*nx + b.vy*ny
+          if (dot < 0) { b.vx -= 2*dot*nx; b.vy -= 2*dot*ny }
+        }
+      }
+
+      // puck-puck collisions (subtle, inelastic)
+      const D = PUCK_R * 2
+      for (let i = 0; i < bodies.length; i++) {
+        for (let j = i+1; j < bodies.length; j++) {
+          const a = bodies[i], b = bodies[j]
+          const dx = b.x-a.x, dy = b.y-a.y
+          const dist2 = dx*dx + dy*dy
+          if (dist2 < D*D && dist2 > 0) {
+            const dist = Math.sqrt(dist2)
+            const nx = dx/dist, ny = dy/dist
+            const overlap = D - dist
+            a.x -= nx*overlap*0.5; a.y -= ny*overlap*0.5
+            b.x += nx*overlap*0.5; b.y += ny*overlap*0.5
+            const rv = (b.vx-a.vx)*nx + (b.vy-a.vy)*ny
+            if (rv < 0) {
+              // coefficient of restitution 0.7 — slightly inelastic so speeds stay calm
+              const imp = rv * 0.85
+              a.vx += imp*nx; a.vy += imp*ny
+              b.vx -= imp*nx; b.vy -= imp*ny
+            }
+          }
+        }
+      }
+
+      // speed floor/ceiling so bubbles never stop or fly away
+      for (const b of bodies) {
+        const spd = Math.sqrt(b.vx*b.vx + b.vy*b.vy)
+        if (spd < 25 && spd > 0) {
+          const scale = 40 / spd
+          b.vx *= scale; b.vy *= scale
+        } else if (spd > 130) {
+          const scale = 100 / spd
+          b.vx *= scale; b.vy *= scale
+        }
+      }
+
+      // write transforms — top-left of puck = stage_center + body_pos - puck_radius
+      const ox = sW/2 - PUCK_R, oy = sH/2 - PUCK_R
+      for (let i = 0; i < bodies.length; i++) {
+        const el = puckEls.current[i]
+        if (el) el.style.transform = `translate(${ox + bodies[i].x}px,${oy + bodies[i].y}px)`
+      }
+
+      rafId = requestAnimationFrame(loop)
+    }
+
+    rafId = requestAnimationFrame(loop)
+    return () => { cancelAnimationFrame(rafId); ro.disconnect() }
+  // featuredW.uuid is the right dep — only restart physics when the featured weapon changes identity
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [featuredW?.uuid, isMobile])
 
   const cols = useMemo(() => colsConfig(vw), [vw])
   const multi = cols.length > 1
@@ -339,7 +485,7 @@ export default function App() {
     const e = equipOf(featuredW.uuid); const s = db.skins[e.skinUuid]; const img = skinImageUrl(s, e.chromaIndex, featuredW)
     return (
       <>
-        <div className="showcase">
+        <div className="showcase" ref={showcaseRef}>
           <div className="halo" />
           {img
             ? (<><img className="sc-img" src={img} alt={s.name} onError={(ev) => hideTo(ev, 'flex')} /><div className="sc-ph" style={{ display: 'none' }}>{s.name}</div></>)
@@ -352,11 +498,11 @@ export default function App() {
           <div className="sc-price"><div className="k">Cena</div><div className="v">{fmt(s.price)} <small>VP</small></div></div>
         </div>
         <div className="pucks">
-          <div className="puck accent p1" data-label="Hodnota inventáře"><span className="ic">💎</span><span className="mini">Hodnota</span><span className="num">{fmt(totals.sum)}</span></div>
-          <div className="puck p2" data-label="Počet skinů"><span className="ic">🎯</span><span className="mini">Skiny</span><span className="num">{totals.owned}</span></div>
-          <div className="puck p3" data-label="Oskinováno zbraní"><span className="ic">🔫</span><span className="mini">Zbraně</span><span className="num">{totals.owned}/{totals.total}</span></div>
-          <div className="puck p4" data-label="Ultra / Exclusive"><span className="ic">👑</span><span className="mini">Top</span><span className="num">{totals.high}</span></div>
-          <div className="puck p5" data-label="Cena kousku"><span className="ic">🏷️</span><span className="mini">Cena</span><span className="num">{fmt(s.price)}</span></div>
+          <div className="puck accent p1" data-label="Hodnota inventáře" ref={el => { puckEls.current[0] = el }}><span className="ic">💎</span><span className="mini">Hodnota</span><span className="num">{fmt(totals.sum)}</span></div>
+          <div className="puck p2" data-label="Počet skinů" ref={el => { puckEls.current[1] = el }}><span className="ic">🎯</span><span className="mini">Skiny</span><span className="num">{totals.owned}</span></div>
+          <div className="puck p3" data-label="Oskinováno zbraní" ref={el => { puckEls.current[2] = el }}><span className="ic">🔫</span><span className="mini">Zbraně</span><span className="num">{totals.owned}/{totals.total}</span></div>
+          <div className="puck p4" data-label="Ultra / Exclusive" ref={el => { puckEls.current[3] = el }}><span className="ic">👑</span><span className="mini">Top</span><span className="num">{totals.high}</span></div>
+          <div className="puck p5" data-label="Cena kousku" ref={el => { puckEls.current[4] = el }}><span className="ic">🏷️</span><span className="mini">Cena</span><span className="num">{fmt(s.price)}</span></div>
         </div>
       </>
     )
@@ -512,7 +658,7 @@ export default function App() {
 
         <section className="hero" style={{ '--tint': featuredTint }}>
           <div className="hero-eyebrow"><span className="pin" /> Hlavní kousek</div>
-          <div className="hero-stage">
+          <div className="hero-stage" ref={stageRef}>
             {!db
               ? <div className="loading" style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>Načítám zbraně z Valorantu…</div>
               : renderShowcase()}
