@@ -69,9 +69,9 @@
   .puck::after{content:attr(data-label);position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(4px);background:var(--ink);color:#FBF6EA;font:600 11px "DM Sans";white-space:nowrap;padding:6px 10px;border-radius:8px;opacity:0;pointer-events:none;transition:.2s;z-index:9}
   .puck:hover::after{opacity:1;transform:translateX(-50%) translateY(0)}
   .puck.accent{border-color:var(--tint,#E8A33D)}
-  /* showcase is 540x282px — translateX/Y values put each bubble's center ~320-360px / 180-200px from the stage
-     center, placing the bubble edge 30-60px from the card edge. Signs alternate so bubbles start spread across
-     all four quadrants. Unique durations (20-35s) + delays so none ever sync up. */
+  /* true circular orbits: rotate(start) translateX(R) rotate(-start) keeps each bubble a fixed R from center at
+     all times — no translateY so there's no diagonal hypotenuse fling. R=250-265px, start angles 72° apart so
+     the five bubbles sit evenly around the card. Unique durations (20-35s) + delays so none ever sync up. */
   .puck.p1{animation:orbit-p1 24s linear infinite, pulse 4.6s ease-in-out infinite, wobble 7.5s ease-in-out infinite;animation-delay:0s, 0s, 0s}
   .puck.p2{animation:orbit-p2 31s linear infinite, pulse 5.4s ease-in-out infinite, wobble 9.5s ease-in-out infinite;animation-delay:2s, .7s, 1.6s;border-color:var(--cobalt)}
   .puck.p3{animation:orbit-p3 21s linear infinite, pulse 3.9s ease-in-out infinite, wobble 6.8s ease-in-out infinite;animation-delay:4s, 1.3s, .9s;border-color:var(--jade)}
@@ -79,24 +79,24 @@
   .puck.p5{animation:orbit-p5 28s linear infinite, pulse 4.9s ease-in-out infinite, wobble 8.6s ease-in-out infinite;animation-delay:3s, 1s, .4s;border-color:var(--marigold)}
   @keyframes floaty{0%,100%{transform:rotate(-8deg) translateY(0)}50%{transform:rotate(-8deg) translateY(-9px)}}
   @keyframes orbit-p1{
-    from{transform:translate(-50%, -50%) rotate(0deg) translateX(282px) translateY(-162px) rotate(0deg)}
-    to{transform:translate(-50%, -50%) rotate(360deg) translateX(282px) translateY(-162px) rotate(-360deg)}
+    from{transform:translate(-50%, -50%) rotate(0deg) translateX(250px) rotate(0deg)}
+    to{transform:translate(-50%, -50%) rotate(360deg) translateX(250px) rotate(-360deg)}
   }
   @keyframes orbit-p2{
-    from{transform:translate(-50%, -50%) rotate(0deg) translateX(-298px) translateY(168px) rotate(0deg)}
-    to{transform:translate(-50%, -50%) rotate(360deg) translateX(-298px) translateY(168px) rotate(-360deg)}
+    from{transform:translate(-50%, -50%) rotate(72deg) translateX(265px) rotate(-72deg)}
+    to{transform:translate(-50%, -50%) rotate(432deg) translateX(265px) rotate(-432deg)}
   }
   @keyframes orbit-p3{
-    from{transform:translate(-50%, -50%) rotate(0deg) translateX(300px) translateY(166px) rotate(0deg)}
-    to{transform:translate(-50%, -50%) rotate(360deg) translateX(300px) translateY(166px) rotate(-360deg)}
+    from{transform:translate(-50%, -50%) rotate(144deg) translateX(255px) rotate(-144deg)}
+    to{transform:translate(-50%, -50%) rotate(504deg) translateX(255px) rotate(-504deg)}
   }
   @keyframes orbit-p4{
-    from{transform:translate(-50%, -50%) rotate(0deg) translateX(-288px) translateY(-158px) rotate(0deg)}
-    to{transform:translate(-50%, -50%) rotate(360deg) translateX(-288px) translateY(-158px) rotate(-360deg)}
+    from{transform:translate(-50%, -50%) rotate(216deg) translateX(260px) rotate(-216deg)}
+    to{transform:translate(-50%, -50%) rotate(576deg) translateX(260px) rotate(-576deg)}
   }
   @keyframes orbit-p5{
-    from{transform:translate(-50%, -50%) rotate(0deg) translateX(294px) translateY(-164px) rotate(0deg)}
-    to{transform:translate(-50%, -50%) rotate(360deg) translateX(294px) translateY(-164px) rotate(-360deg)}
+    from{transform:translate(-50%, -50%) rotate(288deg) translateX(250px) rotate(-288deg)}
+    to{transform:translate(-50%, -50%) rotate(648deg) translateX(250px) rotate(-648deg)}
   }
   /* subtle scale pulse, independent of the orbit transform */
   @keyframes pulse{0%,100%{scale:.94}50%{scale:1.06}}
