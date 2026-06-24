@@ -202,8 +202,45 @@ export default function App() {
     setBrowseAll(toAll)
   }
 
-  // ---- JS physics for puck bubbles (desktop only) ----
   const isMobile = vw <= 1023
+
+  const cols = useMemo(() => colsConfig(vw), [vw])
+  const multi = cols.length > 1
+
+  // size column height so the wall is one flush rectangle and (almost) fits the screen
+  useLayoutEffect(() => {
+    if (!db || !multi) { setColH(null); return }
+    const el = gridRef.current
+    if (!el) return
+    const top = el.getBoundingClientRect().top + window.scrollY
+    const avail = window.innerHeight - top - 14
+    const H = Math.max(vw >= 1024 ? 580 : 520, avail)
+    setColH(H)
+  }, [db, vw, multi])
+
+  const active = items[inv]
+  const equipOf = (wid) => active[wid]
+  const priceOf = (wid) => { const e = active[wid]; return e ? db.skins[e.skinUuid].price : 0 }
+  const weaponsOf = (cat) => {
+    const arr = (db.byCat[cat] || []).slice(); const ord = WORDER[cat] || []
+    return arr.sort((a, b) => { const ia = ord.indexOf(a.name), ib = ord.indexOf(b.name); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.name.localeCompare(b.name) })
+  }
+
+  const featuredW = useMemo(() => {
+    if (!db) return null
+    const ov = featuredMap[inv]
+    if (ov && active[ov]) return db.weapons.find((w) => w.uuid === ov)
+    const real = db.weapons.filter((w) => priceOf(w.uuid) > 0)
+    if (!real.length) return null
+    let max = -1; real.forEach((w) => { const p = priceOf(w.uuid); if (p > max) max = p })
+    const top = real.filter((w) => priceOf(w.uuid) === max)
+    return top.find((w) => /phantom/i.test(w.name)) || top.find((w) => /vandal/i.test(w.name)) || top[0]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [db, items, inv, featuredMap])
+
+  // ---- JS physics for puck bubbles (desktop only) ----
+  // Declared AFTER featuredW so featuredW is not referenced in the dependency
+  // array while still in its temporal dead zone (that crashed the whole app).
   useEffect(() => {
     if (isMobile || !featuredW) return
     const stage = stageRef.current
@@ -307,7 +344,7 @@ export default function App() {
             b.x += nx*overlap*0.5; b.y += ny*overlap*0.5
             const rv = (b.vx-a.vx)*nx + (b.vy-a.vy)*ny
             if (rv < 0) {
-              // coefficient of restitution 0.7 — slightly inelastic so speeds stay calm
+              // coefficient of restitution 0.85 — slightly inelastic so speeds stay calm
               const imp = rv * 0.85
               a.vx += imp*nx; a.vy += imp*ny
               b.vx -= imp*nx; b.vy -= imp*ny
@@ -343,40 +380,6 @@ export default function App() {
   // featuredW.uuid is the right dep — only restart physics when the featured weapon changes identity
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [featuredW?.uuid, isMobile])
-
-  const cols = useMemo(() => colsConfig(vw), [vw])
-  const multi = cols.length > 1
-
-  // size column height so the wall is one flush rectangle and (almost) fits the screen
-  useLayoutEffect(() => {
-    if (!db || !multi) { setColH(null); return }
-    const el = gridRef.current
-    if (!el) return
-    const top = el.getBoundingClientRect().top + window.scrollY
-    const avail = window.innerHeight - top - 14
-    const H = Math.max(vw >= 1024 ? 580 : 520, avail)
-    setColH(H)
-  }, [db, vw, multi])
-
-  const active = items[inv]
-  const equipOf = (wid) => active[wid]
-  const priceOf = (wid) => { const e = active[wid]; return e ? db.skins[e.skinUuid].price : 0 }
-  const weaponsOf = (cat) => {
-    const arr = (db.byCat[cat] || []).slice(); const ord = WORDER[cat] || []
-    return arr.sort((a, b) => { const ia = ord.indexOf(a.name), ib = ord.indexOf(b.name); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.name.localeCompare(b.name) })
-  }
-
-  const featuredW = useMemo(() => {
-    if (!db) return null
-    const ov = featuredMap[inv]
-    if (ov && active[ov]) return db.weapons.find((w) => w.uuid === ov)
-    const real = db.weapons.filter((w) => priceOf(w.uuid) > 0)
-    if (!real.length) return null
-    let max = -1; real.forEach((w) => { const p = priceOf(w.uuid); if (p > max) max = p })
-    const top = real.filter((w) => priceOf(w.uuid) === max)
-    return top.find((w) => /phantom/i.test(w.name)) || top.find((w) => /vandal/i.test(w.name)) || top[0]
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [db, items, inv, featuredMap])
 
   const totals = useMemo(() => {
     if (!db) return { sum: 0, owned: 0, high: 0, total: 0 }
