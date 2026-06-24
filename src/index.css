@@ -79,24 +79,24 @@
   .puck.p5{animation:orbit-p5 28s linear infinite, pulse 4.9s ease-in-out infinite, wobble 8.6s ease-in-out infinite;animation-delay:3s, 1s, .4s;border-color:var(--marigold)}
   @keyframes floaty{0%,100%{transform:rotate(-8deg) translateY(0)}50%{transform:rotate(-8deg) translateY(-9px)}}
   @keyframes orbit-p1{
-    from{transform:translate(-50%, -50%) rotate(0deg) translateX(322px) translateY(-182px) rotate(0deg)}
-    to{transform:translate(-50%, -50%) rotate(360deg) translateX(322px) translateY(-182px) rotate(-360deg)}
+    from{transform:translate(-50%, -50%) rotate(0deg) translateX(282px) translateY(-162px) rotate(0deg)}
+    to{transform:translate(-50%, -50%) rotate(360deg) translateX(282px) translateY(-162px) rotate(-360deg)}
   }
   @keyframes orbit-p2{
-    from{transform:translate(-50%, -50%) rotate(0deg) translateX(-344px) translateY(192px) rotate(0deg)}
-    to{transform:translate(-50%, -50%) rotate(360deg) translateX(-344px) translateY(192px) rotate(-360deg)}
+    from{transform:translate(-50%, -50%) rotate(0deg) translateX(-298px) translateY(168px) rotate(0deg)}
+    to{transform:translate(-50%, -50%) rotate(360deg) translateX(-298px) translateY(168px) rotate(-360deg)}
   }
   @keyframes orbit-p3{
-    from{transform:translate(-50%, -50%) rotate(0deg) translateX(358px) translateY(198px) rotate(0deg)}
-    to{transform:translate(-50%, -50%) rotate(360deg) translateX(358px) translateY(198px) rotate(-360deg)}
+    from{transform:translate(-50%, -50%) rotate(0deg) translateX(300px) translateY(166px) rotate(0deg)}
+    to{transform:translate(-50%, -50%) rotate(360deg) translateX(300px) translateY(166px) rotate(-360deg)}
   }
   @keyframes orbit-p4{
-    from{transform:translate(-50%, -50%) rotate(0deg) translateX(-336px) translateY(-186px) rotate(0deg)}
-    to{transform:translate(-50%, -50%) rotate(360deg) translateX(-336px) translateY(-186px) rotate(-360deg)}
+    from{transform:translate(-50%, -50%) rotate(0deg) translateX(-288px) translateY(-158px) rotate(0deg)}
+    to{transform:translate(-50%, -50%) rotate(360deg) translateX(-288px) translateY(-158px) rotate(-360deg)}
   }
   @keyframes orbit-p5{
-    from{transform:translate(-50%, -50%) rotate(0deg) translateX(350px) translateY(-196px) rotate(0deg)}
-    to{transform:translate(-50%, -50%) rotate(360deg) translateX(350px) translateY(-196px) rotate(-360deg)}
+    from{transform:translate(-50%, -50%) rotate(0deg) translateX(294px) translateY(-164px) rotate(0deg)}
+    to{transform:translate(-50%, -50%) rotate(360deg) translateX(294px) translateY(-164px) rotate(-360deg)}
   }
   /* subtle scale pulse, independent of the orbit transform */
   @keyframes pulse{0%,100%{scale:.94}50%{scale:1.06}}
