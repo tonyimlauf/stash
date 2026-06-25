@@ -21,7 +21,8 @@
     border-bottom:1px solid var(--line);transition:transform .3s ease}
   .top.top--hidden{transform:translateX(-50%) translateY(-110%)}
   .brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
-  .brand .logo{font-family:"Playfair Display";font-weight:900;font-size:28px;letter-spacing:-.3px;line-height:1;color:#75975e}
+  .brand .logo{font-family:"Fraunces","Playfair Display",serif;font-weight:900;font-size:30px;letter-spacing:-.5px;line-height:1;color:#75975e;
+    font-optical-sizing:auto;font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1}
   .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--jade);align-self:center;box-shadow:0 0 0 3px rgba(47,161,124,.22)}
   .brand .sub{font-size:12.5px;color:var(--ink-soft);font-weight:500}
   .seg{display:inline-flex;background:var(--paper-3);border:1px solid var(--line);border-radius:999px;padding:3px}
