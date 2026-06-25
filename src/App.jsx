@@ -688,10 +688,7 @@ export default function App() {
         <div className="top" ref={topRef}>
           <div className="brand">
             <span className="dot" />
-            <svg className="logo-svg" viewBox="0 0 220 54" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="STASH">
-              <text x="0" y="46" fontFamily='"Fraunces", serif' fontWeight="900" fontSize="54"
-                fill="#75975e" style={{fontVariationSettings:'"opsz" 144,"SOFT" 100,"WONK" 1'}}>STASH</text>
-            </svg>
+            <img src="/stash-logo.svg" alt="STASH" className="logo-svg" />
             <span className="sub">tvoje Valorant sbírka</span>
           </div>
           <div className="seg">
