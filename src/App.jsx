@@ -226,14 +226,20 @@ export default function App() {
         barLogo.style.opacity = raw > 0.7 ? String(Math.min((raw - 0.7) / 0.3, 1)) : '0'
       }
 
-      // ── top-bar: hidden up top at rest, slides down from above shortly
-      // after the logo starts moving (raw ≥ 0.3); then normal hide/show ──
+      // ── top-bar: position locked to scroll progress so it slides down from
+      // above and lands exactly when the logo does (raw 0.6 → 1). After the
+      // intro (raw ≥ 1) hand back to the class-based hide/show. ──
       if (top) {
-        if (raw < 0.3) {
-          top.classList.add('top--hidden')
-        } else if (raw < 1) {
+        if (raw < 1) {
           top.classList.remove('top--hidden')
+          top.style.transition = 'none'   // lock to scroll, no lag
+          // 0 at raw≤0.6 (fully hidden) → 1 at raw=1 (fully in place)
+          const bp = Math.max(0, (raw - 0.6) / 0.4)
+          const eased = 1 - Math.pow(1 - bp, 3)
+          top.style.transform = `translateX(-50%) translateY(${-110 * (1 - eased)}%)`
         } else {
+          top.style.transition = ''       // restore CSS transition
+          top.style.transform = ''        // back to CSS-driven transform
           if (y > lastY + 2) top.classList.add('top--hidden')
           else if (y < lastY) top.classList.remove('top--hidden')
         }
