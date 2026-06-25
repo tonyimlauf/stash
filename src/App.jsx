@@ -139,6 +139,7 @@ export default function App() {
   const [colH, setColH] = useState(null)
   const gridRef = useRef(null)
   const modeExitRef = useRef(null) // { mode, search, time } snapshot taken when leaving a skin-picker mode
+  const heroStampRef = useRef(null)
   const topRef = useRef(null)
   const stageRef = useRef(null)
   const showcaseRef = useRef(null)
@@ -177,19 +178,73 @@ export default function App() {
     return () => window.removeEventListener('keydown', onK)
   }, [])
 
-  // hide top bar on scroll-down, show on any scroll-up — direct DOM, no re-renders
+  // hero stamp shrink + top-bar hide/show — all direct DOM, no re-renders
   useEffect(() => {
+    const stamp = heroStampRef.current
+    const top = topRef.current
+    const barLogo = top?.querySelector('.logo-svg')
+
     let lastY = window.scrollY
-    const onScroll = () => {
+
+    const animate = () => {
       const y = window.scrollY
-      const el = topRef.current
-      if (!el) return
-      if (y > lastY + 2) el.classList.add('top--hidden')
-      else if (y < lastY) el.classList.remove('top--hidden')
+      const RANGE = window.innerHeight * 0.65
+      const raw = Math.min(y / RANGE, 1)
+      // ease-out cubic
+      const p = 1 - Math.pow(1 - raw, 3)
+
+      // ── hero stamp ──
+      if (stamp) {
+        const img = stamp.querySelector('img')
+        const heroH = img?.offsetHeight || Math.min(window.innerWidth * 0.13, 180)
+        const heroW = img?.offsetWidth || heroH * 2.46
+        const barH = 36
+        const vw = window.innerWidth
+
+        // start: centered in viewport
+        const sx = vw / 2 - heroW / 2
+        const sy = window.innerHeight / 2 - heroH / 2
+
+        // end: top bar logo position (left edge of .wrap content)
+        const wrapLeft = Math.max(20, (vw - 1240) / 2 + 20)
+        const ex = wrapLeft
+        const ey = 8
+
+        const cx = sx + (ex - sx) * p
+        const cy = sy + (ey - sy) * p
+        const scale = 1 + (barH / heroH - 1) * p
+
+        stamp.style.left = cx + 'px'
+        stamp.style.top = cy + 'px'
+        stamp.style.transform = `scale(${scale})`
+        // fade out stamp while bar logo fades in
+        stamp.style.opacity = raw > 0.78 ? String(1 - (raw - 0.78) / 0.22) : '1'
+      }
+
+      // ── bar logo crossfade ──
+      if (barLogo) {
+        barLogo.style.opacity = raw > 0.7 ? String(Math.min((raw - 0.7) / 0.3, 1)) : '0'
+      }
+
+      // ── top-bar hide/show (only once stamp is done) ──
+      if (top) {
+        if (raw < 1) {
+          top.classList.remove('top--hidden')
+        } else {
+          if (y > lastY + 2) top.classList.add('top--hidden')
+          else if (y < lastY) top.classList.remove('top--hidden')
+        }
+      }
+
       lastY = y
     }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+
+    // set bar logo hidden at start, stamp visible
+    if (barLogo) barLogo.style.opacity = window.scrollY > window.innerHeight * 0.65 * 0.7 ? '1' : '0'
+
+    animate()
+    window.addEventListener('scroll', animate, { passive: true })
+    return () => window.removeEventListener('scroll', animate)
   }, [])
 
   // reset skin search/browse state whenever a different weapon modal opens
@@ -684,7 +739,13 @@ export default function App() {
 
   return (
     <>
+      {/* big intro logo — fixed, shrinks into top bar on scroll */}
+      <div ref={heroStampRef} className="hero-stamp">
+        <img src="/stash-logo.png" alt="STASH" />
+      </div>
+
       <div className="wrap">
+        <div className="intro-spacer" />
         <div className="top" ref={topRef}>
           <div className="brand">
             <img src="/stash-logo.png" alt="STASH" className="logo-svg" />
