@@ -140,6 +140,7 @@ export default function App() {
   const gridRef = useRef(null)
   const modeExitRef = useRef(null) // { mode, search, time } snapshot taken when leaving a skin-picker mode
   const heroStampRef = useRef(null)
+  const introOverlayRef = useRef(null)
   const topRef = useRef(null)
   const stageRef = useRef(null)
   const showcaseRef = useRef(null)
@@ -181,6 +182,7 @@ export default function App() {
   // hero stamp shrink + top-bar hide/show — all direct DOM, no re-renders
   useEffect(() => {
     const stamp = heroStampRef.current
+    const overlay = introOverlayRef.current
     const top = topRef.current
     const barLogo = top?.querySelector('.logo-svg')
 
@@ -188,7 +190,7 @@ export default function App() {
 
     const animate = () => {
       const y = window.scrollY
-      const RANGE = window.innerHeight * 0.65
+      const RANGE = window.innerHeight * 0.5
       const raw = Math.min(y / RANGE, 1)
       // ease-out cubic
       const p = 1 - Math.pow(1 - raw, 3)
@@ -219,6 +221,12 @@ export default function App() {
         stamp.style.transform = `scale(${scale})`
         // fade out stamp while bar logo fades in
         stamp.style.opacity = raw > 0.78 ? String(1 - (raw - 0.78) / 0.22) : '1'
+      }
+
+      // ── overlay: covers content while logo travels; fades out at the end ──
+      if (overlay) {
+        overlay.style.opacity = raw < 0.75 ? '1' : String(1 - (raw - 0.75) / 0.25)
+        overlay.style.pointerEvents = raw >= 1 ? 'none' : 'auto'
       }
 
       // ── bar logo crossfade ──
@@ -748,6 +756,8 @@ export default function App() {
 
   return (
     <>
+      {/* full-screen overlay blocks content until logo lands */}
+      <div ref={introOverlayRef} className="intro-overlay" />
       {/* big intro logo — fixed, shrinks into top bar on scroll */}
       <div ref={heroStampRef} className="hero-stamp">
         <img src="/stash-logo.png" alt="STASH" />
