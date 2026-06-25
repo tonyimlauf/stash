@@ -268,7 +268,7 @@ export default function App() {
     const initPos = [[370,0],[130,225],[-300,210],[-370,0],[150,-220]]
     // clockwise tangent at each start position
     const initTan = [[0,1],[-1,0],[-0.62,-0.78],[0,-1],[1,0]]
-    const initSpd = [32, 28, 36, 30, 26]
+    const initSpd = [44, 38, 50, 42, 36]
 
     const bodies = initPos.map(([x,y],i) => {
       const [tx,ty] = initTan[i]
@@ -360,11 +360,11 @@ export default function App() {
       // speed floor/ceiling — keep drift calm and consistent
       for (const b of bodies) {
         const spd = Math.sqrt(b.vx*b.vx + b.vy*b.vy)
-        if (spd < 12 && spd > 0) {
-          const scale = 20 / spd
+        if (spd < 18 && spd > 0) {
+          const scale = 28 / spd
           b.vx *= scale; b.vy *= scale
-        } else if (spd > 60) {
-          const scale = 45 / spd
+        } else if (spd > 80) {
+          const scale = 65 / spd
           b.vx *= scale; b.vy *= scale
         }
       }
