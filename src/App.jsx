@@ -687,7 +687,6 @@ export default function App() {
       <div className="wrap">
         <div className="top" ref={topRef}>
           <div className="brand">
-            <span className="dot" />
             <img src="/stash-logo.png" alt="STASH" className="logo-svg" />
             <span className="sub">tvoje Valorant sbírka</span>
           </div>
