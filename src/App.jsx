@@ -267,7 +267,7 @@ export default function App() {
     const initPos = [[325,0],[95,196],[-258,190],[-325,0],[95,-196]]
     // clockwise tangent at each start position
     const initTan = [[0,1],[-1,0],[-0.62,-0.78],[0,-1],[1,0]]
-    const initSpd = [65, 58, 72, 60, 55]
+    const initSpd = [32, 28, 36, 30, 26]
 
     const bodies = initPos.map(([x,y],i) => {
       const [tx,ty] = initTan[i]
@@ -353,14 +353,14 @@ export default function App() {
         }
       }
 
-      // speed floor/ceiling so bubbles never stop or fly away
+      // speed floor/ceiling — keep drift calm and consistent
       for (const b of bodies) {
         const spd = Math.sqrt(b.vx*b.vx + b.vy*b.vy)
-        if (spd < 25 && spd > 0) {
-          const scale = 40 / spd
+        if (spd < 12 && spd > 0) {
+          const scale = 20 / spd
           b.vx *= scale; b.vy *= scale
-        } else if (spd > 130) {
-          const scale = 100 / spd
+        } else if (spd > 60) {
+          const scale = 45 / spd
           b.vx *= scale; b.vy *= scale
         }
       }
