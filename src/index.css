@@ -15,20 +15,32 @@
   .wrap{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:8px 20px 24px}
 
   /* ---- collapsible top bar ----
-     The collapse is driven purely by the `.collapsed` class on `.topbar`, so the
-     TRIGGER is easy to swap: right now a button toggles React state (.top-toggle's
-     onClick). To try a hover trigger instead, drop the button handler and add
-     `.topbar:hover .top{max-height:120px;...}` — the animation below stays identical. */
+     Two ready-to-use trigger modes controlled by data-trigger attribute on .topbar.
+     Switch between them with one JSX prop change — no CSS edits needed.
+
+     data-trigger="button"  (default): a chevron button toggles the .collapsed class via React state.
+     data-trigger="hover"   : the bar collapses when the mouse leaves, expands on hover. Button is hidden.
+
+     The expand/collapse animation (max-height + opacity) is shared between both modes. */
   .topbar{position:relative}
+
+  /* button-trigger mode */
   .top-toggle{display:flex;align-items:center;justify-content:center;margin:0 auto 6px;width:46px;height:20px;
     border:1px solid var(--line);border-top:0;border-radius:0 0 11px 11px;background:var(--paper-3);
     color:var(--ink-soft);cursor:pointer;font-size:12px;line-height:1;transition:background .18s,color .18s}
   .top-toggle:hover{background:var(--paper-2);color:var(--ink)}
   .top-toggle .chev{transition:transform .35s ease;transform:rotate(180deg)}
   .topbar.collapsed .top-toggle .chev{transform:rotate(0deg)}
+
+  /* shared open/close animation */
   .top{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:10px;
     max-height:160px;overflow:hidden;transition:max-height .35s ease, opacity .3s ease, margin-bottom .35s ease}
   .topbar.collapsed .top{max-height:0;opacity:0;margin-bottom:0;pointer-events:none}
+
+  /* hover-trigger mode: collapses when cursor leaves .topbar; button hidden */
+  .topbar[data-trigger="hover"] .top-toggle{display:none}
+  .topbar[data-trigger="hover"] .top{max-height:0;opacity:0;margin-bottom:0;pointer-events:none}
+  .topbar[data-trigger="hover"]:hover .top{max-height:160px;opacity:1;margin-bottom:10px;pointer-events:auto}
   .brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
   .brand .logo{font-family:"Space Grotesk";font-weight:700;font-size:27px;letter-spacing:-.5px;line-height:1;background:linear-gradient(100deg,var(--coral),var(--plum) 55%,var(--cobalt));-webkit-background-clip:text;background-clip:text;color:transparent}
   .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--jade);align-self:center;box-shadow:0 0 0 3px rgba(47,161,124,.22)}

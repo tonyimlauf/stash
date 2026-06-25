@@ -118,6 +118,11 @@ function initLoadouts(db) {
   return { my, dream }
 }
 
+// ---- top-bar trigger mode ----
+// Change to 'hover' to switch to hover-trigger (bar collapses when cursor leaves).
+// Only this one line needs to change — CSS and JSX handle both modes automatically.
+const TOPBAR_TRIGGER = 'button'
+
 export default function App() {
   const [db, setDb] = useState(null)
   const [topOpen, setTopOpen] = useState(true) // collapsible top bar; default expanded
@@ -670,9 +675,10 @@ export default function App() {
   return (
     <>
       <div className="wrap">
-        {/* The collapse is class-driven (.topbar.collapsed); only this button's onClick
-            is the trigger. Swap to a hover trigger later without touching the markup. */}
-        <div className={'topbar' + (topOpen ? '' : ' collapsed')}>
+        {/* Trigger mode is set by TOPBAR_TRIGGER (top of file) + data-trigger attr.
+            'button': chevron button toggles .collapsed via React state (current default).
+            'hover' : CSS collapses on mouse-leave; button is hidden by CSS automatically. */}
+        <div className={'topbar' + (TOPBAR_TRIGGER === 'button' && !topOpen ? ' collapsed' : '')} data-trigger={TOPBAR_TRIGGER}>
           <div className="top">
             <div className="brand"><span className="dot" /><span className="logo">STASH</span><span className="sub">tvoje Valorant sbírka</span></div>
             <div className="seg">
