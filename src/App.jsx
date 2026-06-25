@@ -686,7 +686,14 @@ export default function App() {
     <>
       <div className="wrap">
         <div className="top" ref={topRef}>
-          <div className="brand"><span className="dot" /><span className="logo">STASH</span><span className="sub">tvoje Valorant sbírka</span></div>
+          <div className="brand">
+            <span className="dot" />
+            <svg className="logo-svg" viewBox="0 0 220 54" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="STASH">
+              <text x="0" y="46" fontFamily='"Fraunces", serif' fontWeight="900" fontSize="54"
+                fill="#75975e" style={{fontVariationSettings:'"opsz" 144,"SOFT" 100,"WONK" 1'}}>STASH</text>
+            </svg>
+            <span className="sub">tvoje Valorant sbírka</span>
+          </div>
           <div className="seg">
             <button className={inv === 'my' ? 'on' : ''} onClick={() => setInv('my')}>Můj inventář</button>
             <button className={inv === 'dream' ? 'on' : ''} onClick={() => setInv('dream')}>Vysněný</button>
