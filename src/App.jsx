@@ -121,7 +121,7 @@ function initLoadouts(db) {
 // ---- top-bar trigger mode ----
 // Change to 'hover' to switch to hover-trigger (bar collapses when cursor leaves).
 // Only this one line needs to change — CSS and JSX handle both modes automatically.
-const TOPBAR_TRIGGER = 'button'
+const TOPBAR_TRIGGER = 'hover'
 
 export default function App() {
   const [db, setDb] = useState(null)

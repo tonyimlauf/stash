@@ -37,8 +37,10 @@
     max-height:160px;overflow:hidden;transition:max-height .35s ease, opacity .3s ease, margin-bottom .35s ease}
   .topbar.collapsed .top{max-height:0;opacity:0;margin-bottom:0;pointer-events:none}
 
-  /* hover-trigger mode: collapses when cursor leaves .topbar; button hidden */
-  .topbar[data-trigger="hover"] .top-toggle{display:none}
+  /* hover-trigger mode: collapsed by default, expands while the cursor is over
+     the bar. The chevron stays visible as the always-present hover hotspot
+     (otherwise a fully-collapsed bar would have nothing to hover over). */
+  .topbar[data-trigger="hover"] .top-toggle{cursor:default}
   .topbar[data-trigger="hover"] .top{max-height:0;opacity:0;margin-bottom:0;pointer-events:none}
   .topbar[data-trigger="hover"]:hover .top{max-height:160px;opacity:1;margin-bottom:10px;pointer-events:auto}
   .brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
