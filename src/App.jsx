@@ -118,14 +118,8 @@ function initLoadouts(db) {
   return { my, dream }
 }
 
-// ---- top-bar trigger mode ----
-// Change to 'hover' to switch to hover-trigger (bar collapses when cursor leaves).
-// Only this one line needs to change — CSS and JSX handle both modes automatically.
-const TOPBAR_TRIGGER = 'hover'
-
 export default function App() {
   const [db, setDb] = useState(null)
-  const [topOpen, setTopOpen] = useState(true) // collapsible top bar; default expanded
   const [inv, setInv] = useState('my')
   const [items, setItems] = useState({ my: {}, dream: {} })
   const [featuredMap, setFeaturedMap] = useState({ my: null, dream: null })
@@ -145,6 +139,7 @@ export default function App() {
   const [colH, setColH] = useState(null)
   const gridRef = useRef(null)
   const modeExitRef = useRef(null) // { mode, search, time } snapshot taken when leaving a skin-picker mode
+  const topRef = useRef(null)
   const stageRef = useRef(null)
   const showcaseRef = useRef(null)
   const puckEls = useRef([])   // [el0..el4] set via callback refs in renderShowcase
@@ -180,6 +175,21 @@ export default function App() {
     const onK = (e) => { if (e.key === 'Escape') { setWeaponTarget(null); setBuddyTarget(null) } }
     window.addEventListener('keydown', onK)
     return () => window.removeEventListener('keydown', onK)
+  }, [])
+
+  // hide top bar on scroll-down, show on any scroll-up — direct DOM, no re-renders
+  useEffect(() => {
+    let lastY = window.scrollY
+    const onScroll = () => {
+      const y = window.scrollY
+      const el = topRef.current
+      if (!el) return
+      if (y > lastY + 2) el.classList.add('top--hidden')
+      else if (y < lastY) el.classList.remove('top--hidden')
+      lastY = y
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   // reset skin search/browse state whenever a different weapon modal opens
@@ -675,22 +685,13 @@ export default function App() {
   return (
     <>
       <div className="wrap">
-        {/* Trigger mode is set by TOPBAR_TRIGGER (top of file) + data-trigger attr.
-            'button': chevron button toggles .collapsed via React state (current default).
-            'hover' : CSS collapses on mouse-leave; button is hidden by CSS automatically. */}
-        <div className={'topbar' + (TOPBAR_TRIGGER === 'button' && !topOpen ? ' collapsed' : '')} data-trigger={TOPBAR_TRIGGER}>
-          <div className="top">
-            <div className="brand"><span className="dot" /><span className="logo">STASH</span><span className="sub">tvoje Valorant sbírka</span></div>
-            <div className="seg">
-              <button className={inv === 'my' ? 'on' : ''} onClick={() => setInv('my')}>Můj inventář</button>
-              <button className={inv === 'dream' ? 'on' : ''} onClick={() => setInv('dream')}>Vysněný</button>
-            </div>
-            <div className="total"><span className="k">Hodnota</span><span className="v">{fmt(totals.sum)} <small>VP</small></span></div>
+        <div className="top" ref={topRef}>
+          <div className="brand"><span className="dot" /><span className="logo">STASH</span><span className="sub">tvoje Valorant sbírka</span></div>
+          <div className="seg">
+            <button className={inv === 'my' ? 'on' : ''} onClick={() => setInv('my')}>Můj inventář</button>
+            <button className={inv === 'dream' ? 'on' : ''} onClick={() => setInv('dream')}>Vysněný</button>
           </div>
-          <button className="top-toggle" onClick={() => setTopOpen((o) => !o)}
-            aria-expanded={topOpen} title={topOpen ? 'Skrýt lištu' : 'Zobrazit lištu'}>
-            <span className="chev">⌃</span>
-          </button>
+          <div className="total"><span className="k">Hodnota</span><span className="v">{fmt(totals.sum)} <small>VP</small></span></div>
         </div>
 
         <section className="hero" style={{ '--tint': featuredTint }}>
