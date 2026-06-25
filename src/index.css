@@ -12,9 +12,23 @@
   }
   body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;mix-blend-mode:multiply;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");}
-  .wrap{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:14px 20px 24px}
+  .wrap{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:8px 20px 24px}
 
-  .top{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:10px}
+  /* ---- collapsible top bar ----
+     The collapse is driven purely by the `.collapsed` class on `.topbar`, so the
+     TRIGGER is easy to swap: right now a button toggles React state (.top-toggle's
+     onClick). To try a hover trigger instead, drop the button handler and add
+     `.topbar:hover .top{max-height:120px;...}` — the animation below stays identical. */
+  .topbar{position:relative}
+  .top-toggle{display:flex;align-items:center;justify-content:center;margin:0 auto 6px;width:46px;height:20px;
+    border:1px solid var(--line);border-top:0;border-radius:0 0 11px 11px;background:var(--paper-3);
+    color:var(--ink-soft);cursor:pointer;font-size:12px;line-height:1;transition:background .18s,color .18s}
+  .top-toggle:hover{background:var(--paper-2);color:var(--ink)}
+  .top-toggle .chev{transition:transform .35s ease;transform:rotate(180deg)}
+  .topbar.collapsed .top-toggle .chev{transform:rotate(0deg)}
+  .top{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:10px;
+    max-height:160px;overflow:hidden;transition:max-height .35s ease, opacity .3s ease, margin-bottom .35s ease}
+  .topbar.collapsed .top{max-height:0;opacity:0;margin-bottom:0;pointer-events:none}
   .brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
   .brand .logo{font-family:"Space Grotesk";font-weight:700;font-size:27px;letter-spacing:-.5px;line-height:1;background:linear-gradient(100deg,var(--coral),var(--plum) 55%,var(--cobalt));-webkit-background-clip:text;background-clip:text;color:transparent}
   .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--jade);align-self:center;box-shadow:0 0 0 3px rgba(47,161,124,.22)}
@@ -27,14 +41,14 @@
   .total .v{font-family:"Space Mono";font-weight:700;font-size:20px;color:var(--ink)}
   .total .v small{font-size:11px;color:var(--ink-soft);font-weight:400;margin-left:3px}
 
-  .hero{position:relative;margin:2px 0 14px;height:auto;min-height:600px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .hero{position:relative;margin:6px 0 14px;height:auto;min-height:600px;display:flex;align-items:flex-start;justify-content:center;overflow:hidden}
   .hero-eyebrow{position:absolute;top:4px;left:4px;display:flex;align-items:center;gap:9px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;z-index:8}
   .hero-eyebrow .pin{width:8px;height:8px;border-radius:50%;background:var(--tint,#E8A33D)}
   /* orbit container — every .puck is positioned absolute against this single ancestor */
-  .hero-stage{position:relative;width:100%;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .hero-stage{position:relative;width:100%;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:14px}
 
   /* compact, strongly-rounded weapon showcase — bubbles live OUTSIDE it */
-  .showcase{position:relative;z-index:2;width:clamp(360px,50%,620px);height:324px;border-radius:46px;overflow:hidden;
+  .showcase{position:relative;z-index:2;width:clamp(440px,60%,800px);height:324px;border-radius:46px;overflow:hidden;
     border:1px solid var(--line);background:radial-gradient(95% 120% at 50% -18%, var(--tint,#E8A33D40), transparent 62%),linear-gradient(180deg,var(--card),var(--paper-2));
     box-shadow:0 30px 60px -26px rgba(var(--shadow),.55), inset 0 1px 0 rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;padding:18px}
   .showcase .halo{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:78%;aspect-ratio:1/1;border-radius:50%;filter:blur(36px);background:radial-gradient(circle,var(--tint,#E8A33D55),transparent 70%)}

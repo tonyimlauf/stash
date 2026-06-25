@@ -120,6 +120,7 @@ function initLoadouts(db) {
 
 export default function App() {
   const [db, setDb] = useState(null)
+  const [topOpen, setTopOpen] = useState(true) // collapsible top bar; default expanded
   const [inv, setInv] = useState('my')
   const [items, setItems] = useState({ my: {}, dream: {} })
   const [featuredMap, setFeaturedMap] = useState({ my: null, dream: null })
@@ -247,13 +248,19 @@ export default function App() {
     const card = showcaseRef.current
     if (!stage || !card) return
 
-    // measure stage and card once; ResizeObserver keeps dims fresh
+    // measure stage and card once; ResizeObserver keeps dims fresh.
+    // cx/cy = card center relative to stage center — the card is no longer
+    // vertically centred (it sits near the top), so collisions must offset by it.
     const measure = () => {
+      const sR = stage.getBoundingClientRect()
+      const cR = card.getBoundingClientRect()
       dimsRef.current = {
         sW: stage.offsetWidth,
         sH: stage.offsetHeight,
         cW: card.offsetWidth,
         cH: card.offsetHeight,
+        cx: (cR.left + cR.right) / 2 - (sR.left + sR.right) / 2,
+        cy: (cR.top + cR.bottom) / 2 - (sR.top + sR.bottom) / 2,
       }
     }
     measure()
@@ -264,13 +271,16 @@ export default function App() {
     const CARD_RX = 46  // card CSS border-radius
     const BREATH_AMP = 0.08  // ±8% size pulse as bubbles drift
 
-    // 5 start positions spread around the (larger) card, already clear of it on frame 1
-    const initPos = [[370,0],[130,225],[-300,210],[-370,0],[150,-220]]
-    // clockwise tangent at each start position
-    const initTan = [[0,1],[-1,0],[-0.62,-0.78],[0,-1],[1,0]]
+    // 5 start positions, offsets relative to the CARD center (sides + below it),
+    // already clear of the card on frame 1
+    const initPos = [[-400,-20],[400,-20],[-280,235],[270,225],[40,300]]
+    // initial drift direction at each start position
+    const initTan = [[0,1],[0,1],[-0.7,-0.7],[0.7,-0.7],[1,0]]
     const initSpd = [44, 38, 50, 42, 36]
 
-    const bodies = initPos.map(([x,y],i) => {
+    const { cx: cx0, cy: cy0 } = dimsRef.current
+    const bodies = initPos.map(([ox,oy],i) => {
+      const x = cx0 + ox, y = cy0 + oy
       const [tx,ty] = initTan[i]
       const spd = initSpd[i]
       // small random jitter to tangent angle so pucks diverge
@@ -308,7 +318,7 @@ export default function App() {
       const dt = Math.min((ts - lastTs) / 1000, 0.05)
       lastTs = ts
 
-      const { sW, sH, cW, cH } = dimsRef.current
+      const { sW, sH, cW, cH, cx, cy } = dimsRef.current
       const halfW = sW/2 - PUCK_R
       const halfH = sH/2 - PUCK_R
 
@@ -322,11 +332,12 @@ export default function App() {
         if (b.y < -halfH) { b.y = -halfH; b.vy = Math.abs(b.vy) }
         if (b.y >  halfH) { b.y =  halfH; b.vy = -Math.abs(b.vy) }
 
-        // card bounce — resolve against card SDF
-        const sdf = cardSDF(b.x, b.y, cW, cH)
+        // card bounce — resolve against card SDF, in card-center-relative coords
+        const rx = b.x - cx, ry = b.y - cy
+        const sdf = cardSDF(rx, ry, cW, cH)
         if (sdf < PUCK_R) {
           const pen = PUCK_R - sdf
-          const [nx, ny] = cardNormal(b.x, b.y, cW, cH)
+          const [nx, ny] = cardNormal(rx, ry, cW, cH)
           b.x += nx * pen; b.y += ny * pen
           const dot = b.vx*nx + b.vy*ny
           if (dot < 0) { b.vx -= 2*dot*nx; b.vy -= 2*dot*ny }
@@ -659,13 +670,21 @@ export default function App() {
   return (
     <>
       <div className="wrap">
-        <div className="top">
-          <div className="brand"><span className="dot" /><span className="logo">STASH</span><span className="sub">tvoje Valorant sbírka</span></div>
-          <div className="seg">
-            <button className={inv === 'my' ? 'on' : ''} onClick={() => setInv('my')}>Můj inventář</button>
-            <button className={inv === 'dream' ? 'on' : ''} onClick={() => setInv('dream')}>Vysněný</button>
+        {/* The collapse is class-driven (.topbar.collapsed); only this button's onClick
+            is the trigger. Swap to a hover trigger later without touching the markup. */}
+        <div className={'topbar' + (topOpen ? '' : ' collapsed')}>
+          <div className="top">
+            <div className="brand"><span className="dot" /><span className="logo">STASH</span><span className="sub">tvoje Valorant sbírka</span></div>
+            <div className="seg">
+              <button className={inv === 'my' ? 'on' : ''} onClick={() => setInv('my')}>Můj inventář</button>
+              <button className={inv === 'dream' ? 'on' : ''} onClick={() => setInv('dream')}>Vysněný</button>
+            </div>
+            <div className="total"><span className="k">Hodnota</span><span className="v">{fmt(totals.sum)} <small>VP</small></span></div>
           </div>
-          <div className="total"><span className="k">Hodnota</span><span className="v">{fmt(totals.sum)} <small>VP</small></span></div>
+          <button className="top-toggle" onClick={() => setTopOpen((o) => !o)}
+            aria-expanded={topOpen} title={topOpen ? 'Skrýt lištu' : 'Zobrazit lištu'}>
+            <span className="chev">⌃</span>
+          </button>
         </div>
 
         <section className="hero" style={{ '--tint': featuredTint }}>
