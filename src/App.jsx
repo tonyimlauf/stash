@@ -260,11 +260,12 @@ export default function App() {
     const ro = new ResizeObserver(measure)
     ro.observe(stage); ro.observe(card)
 
-    const PUCK_R = 40
+    const PUCK_R = 50   // collision radius: base 46 (92px/2) + breathing headroom
     const CARD_RX = 46  // card CSS border-radius
+    const BREATH_AMP = 0.08  // ±8% size pulse as bubbles drift
 
-    // 5 start positions evenly spread on the outer rounded-rect path (gap ~55px from card)
-    const initPos = [[325,0],[95,196],[-258,190],[-325,0],[95,-196]]
+    // 5 start positions spread around the (larger) card, already clear of it on frame 1
+    const initPos = [[370,0],[130,225],[-300,210],[-370,0],[150,-220]]
     // clockwise tangent at each start position
     const initTan = [[0,1],[-1,0],[-0.62,-0.78],[0,-1],[1,0]]
     const initSpd = [32, 28, 36, 30, 26]
@@ -275,7 +276,10 @@ export default function App() {
       // small random jitter to tangent angle so pucks diverge
       const jitter = (Math.random()-0.5)*0.5
       const c = Math.cos(jitter), s = Math.sin(jitter)
-      return { x, y, vx:(tx*c - ty*s)*spd, vy:(tx*s + ty*c)*spd }
+      // breathing: each puck pulses at its own slow rate/phase so they never sync
+      const breathFreq = 0.5 + Math.random()*0.35   // rad/s → ~9–13s period
+      const breathPhase = Math.random()*Math.PI*2
+      return { x, y, vx:(tx*c - ty*s)*spd, vy:(tx*s + ty*c)*spd, breathFreq, breathPhase }
     })
 
     // SDF of rounded rect with half-extents (hx+CARD_RX, hy+CARD_RX), corner-radius CARD_RX
@@ -365,11 +369,16 @@ export default function App() {
         }
       }
 
-      // write transforms — top-left of puck = stage_center + body_pos - puck_radius
-      const ox = sW/2 - PUCK_R, oy = sH/2 - PUCK_R
+      // write transforms — translate to position, scale for the breathing pulse.
+      // top-left offset uses base radius 46 (half the 92px box) so scaling stays centred.
+      const tSec = ts / 1000
+      const ox = sW/2 - 46, oy = sH/2 - 46
       for (let i = 0; i < bodies.length; i++) {
         const el = puckEls.current[i]
-        if (el) el.style.transform = `translate(${ox + bodies[i].x}px,${oy + bodies[i].y}px)`
+        if (!el) continue
+        const b = bodies[i]
+        const scale = 1 + BREATH_AMP * Math.sin(tSec * b.breathFreq + b.breathPhase)
+        el.style.transform = `translate(${ox + b.x}px,${oy + b.y}px) scale(${scale})`
       }
 
       rafId = requestAnimationFrame(loop)

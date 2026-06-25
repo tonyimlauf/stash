@@ -27,14 +27,14 @@
   .total .v{font-family:"Space Mono";font-weight:700;font-size:20px;color:var(--ink)}
   .total .v small{font-size:11px;color:var(--ink-soft);font-weight:400;margin-left:3px}
 
-  .hero{position:relative;margin:2px 0 14px;height:auto;min-height:560px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .hero{position:relative;margin:2px 0 14px;height:auto;min-height:600px;display:flex;align-items:center;justify-content:center;overflow:hidden}
   .hero-eyebrow{position:absolute;top:4px;left:4px;display:flex;align-items:center;gap:9px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;z-index:8}
   .hero-eyebrow .pin{width:8px;height:8px;border-radius:50%;background:var(--tint,#E8A33D)}
   /* orbit container — every .puck is positioned absolute against this single ancestor */
-  .hero-stage{position:relative;width:100%;min-height:560px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .hero-stage{position:relative;width:100%;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center}
 
   /* compact, strongly-rounded weapon showcase — bubbles live OUTSIDE it */
-  .showcase{position:relative;z-index:2;width:clamp(320px,44%,540px);height:282px;border-radius:46px;overflow:hidden;
+  .showcase{position:relative;z-index:2;width:clamp(360px,50%,620px);height:324px;border-radius:46px;overflow:hidden;
     border:1px solid var(--line);background:radial-gradient(95% 120% at 50% -18%, var(--tint,#E8A33D40), transparent 62%),linear-gradient(180deg,var(--card),var(--paper-2));
     box-shadow:0 30px 60px -26px rgba(var(--shadow),.55), inset 0 1px 0 rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;padding:18px}
   .showcase .halo{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:78%;aspect-ratio:1/1;border-radius:50%;filter:blur(36px);background:radial-gradient(circle,var(--tint,#E8A33D55),transparent 70%)}
@@ -55,13 +55,13 @@
      centering AND the rotate()+translateX()+translateY()+rotate(-) orbit in one transform, so there's only ever
      one `transform` driver (no fighting with a base transform). pulse (scale) and wobble (translate) are
      independent CSS properties, so they layer on top without touching the orbit transform at all. */
-  .puck{position:absolute;top:0;left:0;width:80px;height:80px;border-radius:50%;cursor:default;pointer-events:auto;
+  .puck{position:absolute;top:0;left:0;width:92px;height:92px;border-radius:50%;cursor:default;pointer-events:auto;
     background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
     box-shadow:0 10px 30px -10px rgba(var(--shadow),.5), inset 0 1px 0 rgba(255,255,255,.55);
     backdrop-filter:blur(8px) saturate(1.2);-webkit-backdrop-filter:blur(8px) saturate(1.2);
     transition:box-shadow .22s, filter .22s;z-index:5;will-change:transform}
-  .puck .ic{font-size:17px;line-height:1}
+  .puck .ic{font-size:20px;line-height:1}
   .puck .mini{font:600 9px "DM Sans";letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
   .puck .num{font:700 12px "Space Mono";color:var(--ink);display:none}
   .puck:hover{filter:brightness(1.07);box-shadow:0 18px 36px -10px rgba(var(--shadow),.7), inset 0 1px 0 rgba(255,255,255,.7);z-index:8}
