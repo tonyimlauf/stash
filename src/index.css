@@ -28,10 +28,11 @@
   .hero-stamp{position:fixed;top:0;left:0;z-index:60;pointer-events:none;transform-origin:top left}
   .hero-stamp img{height:clamp(60px,13vw,180px);width:auto;display:block}
 
-  /* intro-overlay: hides content while logo travels, fades out when logo lands */
-  .intro-overlay{position:fixed;inset:0;z-index:55;background:var(--paper);pointer-events:none}
-  /* spacer = RANGE(50vh) – wrap-padding(68px) so showcase hits fold exactly when animation ends */
-  .intro-spacer{height:calc(50vh - 68px)}
+  /* spacer pushes the always-present showcase one viewport down: first screen
+     shows only the intro logo, scrolling reveals the showcase as the logo lands.
+     ≈ RANGE(85vh) minus the wrap top padding (68px) so showcase reaches the
+     top right as the shrink animation finishes. */
+  .intro-spacer{height:calc(85vh - 68px)}
   .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--jade);align-self:center;box-shadow:0 0 0 3px rgba(47,161,124,.22)}
   .brand .sub{font-size:12.5px;color:var(--ink-soft);font-weight:500}
   .seg{display:inline-flex;background:var(--paper-3);border:1px solid var(--line);border-radius:999px;padding:3px}
