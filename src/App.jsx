@@ -768,7 +768,6 @@ export default function App() {
         </div>
 
         <section className="hero" style={{ '--tint': featuredTint }}>
-          <div className="hero-eyebrow"><span className="pin" /> Hlavní kousek</div>
           <div className="hero-stage" ref={stageRef}>
             {!db
               ? <div className="loading" style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>Načítám zbraně z Valorantu…</div>
