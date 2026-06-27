@@ -52,7 +52,7 @@
     border:1px solid var(--line);background:radial-gradient(95% 120% at 50% -18%, var(--tint,#E8A33D40), transparent 62%),linear-gradient(180deg,var(--card),var(--paper-2));
     box-shadow:0 30px 60px -26px rgba(var(--shadow),.55), inset 0 1px 0 rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;padding:18px}
   .showcase .halo{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:78%;aspect-ratio:1/1;border-radius:50%;filter:blur(36px);background:radial-gradient(circle,var(--tint,#E8A33D55),transparent 70%)}
-  .sc-img{position:relative;z-index:1;max-width:86%;max-height:60%;object-fit:contain;filter:drop-shadow(0 18px 22px rgba(var(--shadow),.45));transform:rotate(-8deg);animation:floaty 7s ease-in-out infinite}
+  .sc-img{position:relative;z-index:1;max-width:86%;max-height:60%;object-fit:contain;filter:drop-shadow(0 18px 22px rgba(var(--shadow),.45));transform:rotate(-8deg);animation:floaty 11s ease-in-out infinite}
   .sc-ph{position:relative;z-index:1;width:74%;height:108px;border-radius:16px;background:linear-gradient(120deg,var(--tint,#E8A33D),transparent);display:flex;align-items:center;justify-content:center;color:#fff;font:700 18px "Space Grotesk";transform:rotate(-5deg)}
   .sc-meta{position:absolute;left:24px;bottom:20px;z-index:3;max-width:64%}
   .sc-tier{display:inline-flex;align-items:center;gap:7px;font:600 10.5px "DM Sans";letter-spacing:.12em;text-transform:uppercase;color:var(--ink);background:rgba(251,246,234,.85);border:1px solid var(--tint,#E8A33D);padding:4px 10px;border-radius:999px;margin-bottom:8px}
@@ -88,7 +88,15 @@
   .puck.p3{border-color:var(--jade)}
   .puck.p4{border-color:var(--plum)}
   .puck.p5{border-color:var(--marigold)}
-  @keyframes floaty{0%,100%{transform:rotate(-8deg) translateY(0)}50%{transform:rotate(-8deg) translateY(-9px)}}
+  /* slow zero-gravity hover: gentle up/down with a very slight rotation drift,
+     layered on top of the base -8deg tilt */
+  @keyframes floaty{
+    0%   {transform:rotate(-8deg)   translateY(0)}
+    25%  {transform:rotate(-6.6deg) translateY(-7px)}
+    50%  {transform:rotate(-8deg)   translateY(-12px)}
+    75%  {transform:rotate(-9.4deg) translateY(-7px)}
+    100% {transform:rotate(-8deg)   translateY(0)}
+  }
 
   .wall-head{display:flex;align-items:center;gap:12px;margin:0 4px 8px}
   .wall-head h2{font-family:"Space Grotesk";font-weight:600;font-size:16px;margin:0;letter-spacing:-.3px}
@@ -101,7 +109,12 @@
   .cat{flex:0 0 auto;font-family:"Space Grotesk";font-weight:700;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);text-align:center;margin:1px 0 0}
   .slot{flex:var(--w,1) 1 0;min-height:56px;position:relative;border-radius:var(--r);overflow:hidden;cursor:pointer;
     background:radial-gradient(120% 90% at 50% 0%, var(--tint,#E8A33D22), transparent 65%),var(--card);
-    border:1px solid var(--line);transition:transform .15s, box-shadow .15s, border-color .15s;box-shadow:0 6px 14px -10px rgba(var(--shadow),.55)}
+    border:1px solid var(--line);box-shadow:0 6px 14px -10px rgba(var(--shadow),.55);
+    transition:transform .15s, box-shadow .15s, border-color .15s, opacity .55s ease var(--rd,0ms), translate .55s cubic-bezier(.22,.61,.36,1) var(--rd,0ms)}
+  /* scroll-reveal: slide in from the side + fade. Uses `translate` (independent
+     of `transform`) so the hover lift transform stays free and unaffected. */
+  .slot.reveal{opacity:0;translate:26px 0}
+  .slot.reveal-in{opacity:1;translate:0 0}
   .slot:hover{transform:translateY(-5px) scale(1.09);border-color:var(--tint,#E8A33D);box-shadow:0 26px 44px -18px var(--tint,#E8A33D);z-index:8}
   .slot.std{--tint:#B7A98A}
   .grid.auto .col{flex:1}
@@ -245,4 +258,8 @@
     .showcase{height:240px}.puck{width:68px;height:68px}.puck .ic{font-size:14px}
     .wbanner{flex-direction:column;min-height:0;text-align:center}.winfo{flex:none;max-width:100%}.wprev{height:170px}
   }
-  @media(prefers-reduced-motion:reduce){.hero-img,.puck{animation:none;translate:none}*{transition-duration:.001ms!important}}
+  @media(prefers-reduced-motion:reduce){
+    .hero-img,.puck,.sc-img{animation:none}
+    .slot.reveal{opacity:1;translate:none}
+    *{transition-duration:.001ms!important}
+  }

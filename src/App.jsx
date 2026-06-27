@@ -137,6 +137,7 @@ export default function App() {
   const confirmVideoRef = useRef(null)
   const [vw, setVw] = useState(typeof window !== 'undefined' ? window.innerWidth : 1280)
   const [colH, setColH] = useState(null)
+  const [revealed, setRevealed] = useState(() => new Set()) // slot uuids that have scrolled into view ('all' = reveal everything, e.g. reduced motion)
   const gridRef = useRef(null)
   const modeExitRef = useRef(null) // { mode, search, time } snapshot taken when leaving a skin-picker mode
   const heroStampRef = useRef(null)
@@ -297,6 +298,32 @@ export default function App() {
     const H = Math.max(vw >= 1024 ? 580 : 520, avail)
     setColH(H)
   }, [db, vw, multi])
+
+  // scroll-reveal for inventory cards — each slot fades + slides into place as
+  // it enters the viewport. Revealed uuids are tracked in state (not via raw
+  // classList) so the class survives React re-renders without flashing.
+  useEffect(() => {
+    if (!db) return
+    const grid = gridRef.current
+    if (!grid) return
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduce) { setRevealed('all'); return }
+
+    const io = new IntersectionObserver((entries, obs) => {
+      let hit = null
+      entries.forEach((en) => {
+        if (!en.isIntersecting) return
+        hit = hit || new Set()
+        hit.add(en.target.dataset.uuid)
+        obs.unobserve(en.target)
+      })
+      if (hit) setRevealed((prev) => prev === 'all' ? prev : new Set([...prev, ...hit]))
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' })
+
+    grid.querySelectorAll('.slot').forEach((s) => io.observe(s))
+    return () => io.disconnect()
+    // re-run when the grid contents change (inventory switch, layout, data)
+  }, [db, inv, cols, colH])
 
   const active = items[inv]
   const equipOf = (wid) => active[wid]
@@ -551,14 +578,18 @@ export default function App() {
   }
 
   // ---- render helpers (plain functions returning JSX, not nested components) ----
-  const renderSlot = (w) => {
+  const renderSlot = (w, i = 0) => {
     const e = equipOf(w.uuid); const s = db.skins[e.skinUuid]
     const img = skinImageUrl(s, e.chromaIndex, w)
     const buddy = db.buddies.find((b) => b.uuid === e.buddyId)
     const std = s.isStandard
     const isFeat = featuredW && featuredW.uuid === w.uuid
+    const isIn = revealed === 'all' || revealed.has(w.uuid)
     return (
-      <div key={w.uuid} className={'slot' + (std ? ' std' : '')} style={{ '--tint': s.tint, '--w': String(weightFor(w.name)) }} onClick={() => setWeaponTarget(w.uuid)}>
+      <div key={w.uuid} data-uuid={w.uuid}
+        className={'slot' + (std ? ' std' : '') + ' reveal' + (isIn ? ' reveal-in' : '')}
+        style={{ '--tint': s.tint, '--w': String(weightFor(w.name)), '--rd': (i % 8) * 55 + 'ms' }}
+        onClick={() => setWeaponTarget(w.uuid)}>
         <span className="sp-tier" />
         <button className={'star' + (isFeat ? ' on' : '')} title="Hlavní kousek" onClick={(ev) => { ev.stopPropagation(); toggleFeatured(w.uuid) }}>★</button>
         <div className="sp-img">
@@ -790,7 +821,7 @@ export default function App() {
                 return (
                   <div key={cat} style={{ display: 'contents' }}>
                     <div className="cat">{label}</div>
-                    {ws.map(renderSlot)}
+                    {ws.map((w, i) => renderSlot(w, i))}
                   </div>
                 )
               })}
