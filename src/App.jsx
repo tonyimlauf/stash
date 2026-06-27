@@ -648,7 +648,10 @@ export default function App() {
     const e = equipOf(featuredW.uuid); const s = db.skins[e.skinUuid]; const img = skinImageUrl(s, e.chromaIndex, featuredW)
     return (
       <>
-        <div className="showcase" ref={showcaseRef}>
+        <div className="showcase-wrap">
+          {/* glowing ring tracing the bubble orbit lane around the card */}
+          <div className="orbit-ring" aria-hidden="true" />
+          <div className="showcase" ref={showcaseRef}>
           <div className="halo" />
           {img
             ? (<>
@@ -665,6 +668,7 @@ export default function App() {
             <div className="sc-weapon">{s.weapon} · {s.cat}</div>
           </div>
           <div className="sc-price"><div className="k">Cena</div><div className="v">{fmt(s.price)} <small>VP</small></div></div>
+          </div>
         </div>
         <div className="pucks">
           <div className="puck accent p1" data-label="Hodnota inventáře" ref={el => { puckEls.current[0] = el }}><span className="ic">💎</span><span className="mini">Hodnota</span><span className="num">{fmt(totals.sum)}</span></div>
