@@ -52,7 +52,7 @@
     border:1px solid var(--line);background:radial-gradient(95% 120% at 50% -18%, var(--tint,#E8A33D40), transparent 62%),linear-gradient(180deg,var(--card),var(--paper-2));
     box-shadow:0 30px 60px -26px rgba(var(--shadow),.55), inset 0 1px 0 rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;padding:18px}
   .showcase .halo{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:78%;aspect-ratio:1/1;border-radius:50%;filter:blur(36px);background:radial-gradient(circle,var(--tint,#E8A33D55),transparent 70%)}
-  .sc-img{position:relative;z-index:1;max-width:86%;max-height:60%;object-fit:contain;filter:drop-shadow(0 18px 22px rgba(var(--shadow),.45));transform:rotate(-8deg);animation:floaty 11s ease-in-out infinite}
+  .sc-img{position:relative;z-index:1;max-width:86%;max-height:60%;object-fit:contain;filter:drop-shadow(0 18px 22px rgba(var(--shadow),.45));transform:rotate(-8deg);animation:floaty 8.5s ease-in-out infinite;will-change:transform}
   .sc-ph{position:relative;z-index:1;width:74%;height:108px;border-radius:16px;background:linear-gradient(120deg,var(--tint,#E8A33D),transparent);display:flex;align-items:center;justify-content:center;color:#fff;font:700 18px "Space Grotesk";transform:rotate(-5deg)}
   .sc-meta{position:absolute;left:24px;bottom:20px;z-index:3;max-width:64%}
   .sc-tier{display:inline-flex;align-items:center;gap:7px;font:600 10.5px "DM Sans";letter-spacing:.12em;text-transform:uppercase;color:var(--ink);background:rgba(251,246,234,.85);border:1px solid var(--tint,#E8A33D);padding:4px 10px;border-radius:999px;margin-bottom:8px}
@@ -91,11 +91,11 @@
   /* slow zero-gravity hover: gentle up/down with a very slight rotation drift,
      layered on top of the base -8deg tilt */
   @keyframes floaty{
-    0%   {transform:rotate(-8deg)   translateY(0)}
-    25%  {transform:rotate(-6.6deg) translateY(-7px)}
-    50%  {transform:rotate(-8deg)   translateY(-12px)}
-    75%  {transform:rotate(-9.4deg) translateY(-7px)}
-    100% {transform:rotate(-8deg)   translateY(0)}
+    0%   {transform:rotate(-8deg)  translateY(0)}
+    25%  {transform:rotate(-5deg)  translateY(-11px)}
+    50%  {transform:rotate(-8deg)  translateY(-19px)}
+    75%  {transform:rotate(-11deg) translateY(-11px)}
+    100% {transform:rotate(-8deg)  translateY(0)}
   }
 
   .wall-head{display:flex;align-items:center;gap:12px;margin:0 4px 8px}
