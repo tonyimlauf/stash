@@ -513,16 +513,27 @@ export default function App() {
   useEffect(() => {
     if (isMobile || !featuredW) return
     const card = showcaseRef.current
-    if (!card) return
-    card.style.setProperty('--mx', '50%')
-    card.style.setProperty('--my', '50%')
+    const spot = card?.querySelector('.sc-spot')
+    if (!card || !spot) return
+    // drive everything from JS — no reliance on CSS :hover (which a floating
+    // puck over the card could swallow) and no CSS-var inheritance.
+    spot.style.setProperty('--mx', '50%')
+    spot.style.setProperty('--my', '50%')
     const onMove = (e) => {
       const r = card.getBoundingClientRect()
-      card.style.setProperty('--mx', (e.clientX - r.left) + 'px')
-      card.style.setProperty('--my', (e.clientY - r.top) + 'px')
+      spot.style.setProperty('--mx', (e.clientX - r.left) + 'px')
+      spot.style.setProperty('--my', (e.clientY - r.top) + 'px')
+      spot.style.opacity = '1'
     }
+    const onLeave = () => { spot.style.opacity = '0' }
     card.addEventListener('mousemove', onMove)
-    return () => card.removeEventListener('mousemove', onMove)
+    card.addEventListener('mouseenter', onMove)
+    card.addEventListener('mouseleave', onLeave)
+    return () => {
+      card.removeEventListener('mousemove', onMove)
+      card.removeEventListener('mouseenter', onMove)
+      card.removeEventListener('mouseleave', onLeave)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [featuredW?.uuid, isMobile])
 
