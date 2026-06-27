@@ -299,24 +299,6 @@ export default function App() {
     setColH(H)
   }, [db, vw, multi])
 
-  // spotlight reveal on the showcase: cursor-following radial mask exposes the
-  // enhanced "glow" copy of the skin. Desktop only; updates CSS vars directly.
-  useEffect(() => {
-    if (isMobile || !featuredW) return
-    const card = showcaseRef.current
-    if (!card) return
-    // start centred so the first frame after enter looks right
-    card.style.setProperty('--mx', '50%')
-    card.style.setProperty('--my', '50%')
-    const onMove = (e) => {
-      const r = card.getBoundingClientRect()
-      card.style.setProperty('--mx', (e.clientX - r.left) + 'px')
-      card.style.setProperty('--my', (e.clientY - r.top) + 'px')
-    }
-    card.addEventListener('mousemove', onMove)
-    return () => card.removeEventListener('mousemove', onMove)
-  }, [isMobile, featuredW?.uuid])
-
   // scroll-reveal for inventory cards — each slot fades + slides into place as
   // it enters the viewport. Revealed uuids are tracked in state (not via raw
   // classList) so the class survives React re-renders without flashing.
@@ -523,6 +505,25 @@ export default function App() {
     return () => { cancelAnimationFrame(rafId); ro.disconnect() }
   // featuredW.uuid is the right dep — only restart physics when the featured weapon changes identity
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [featuredW?.uuid, isMobile])
+
+  // spotlight reveal on the showcase: cursor-following radial mask exposes the
+  // enhanced "glow" copy of the skin. Desktop only; updates CSS vars directly.
+  // Declared after featuredW so it isn't referenced while in its TDZ.
+  useEffect(() => {
+    if (isMobile || !featuredW) return
+    const card = showcaseRef.current
+    if (!card) return
+    card.style.setProperty('--mx', '50%')
+    card.style.setProperty('--my', '50%')
+    const onMove = (e) => {
+      const r = card.getBoundingClientRect()
+      card.style.setProperty('--mx', (e.clientX - r.left) + 'px')
+      card.style.setProperty('--my', (e.clientY - r.top) + 'px')
+    }
+    card.addEventListener('mousemove', onMove)
+    return () => card.removeEventListener('mousemove', onMove)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [featuredW?.uuid, isMobile])
 
   const totals = useMemo(() => {
