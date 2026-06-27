@@ -48,16 +48,6 @@
   .hero-stage{position:relative;width:100%;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:14px}
 
   /* compact, strongly-rounded weapon showcase — bubbles live OUTSIDE it */
-  /* wrapper lets the orbit ring sit centred on the card and overflow it */
-  .showcase-wrap{position:relative;display:flex;z-index:2}
-  /* glowing ring tracing the bubble orbit lane — extra glow on the edges so the
-     orbit is faintly visible. Sits behind the card and extends beyond it. */
-  .orbit-ring{position:absolute;inset:-46px;z-index:0;pointer-events:none;border-radius:92px;opacity:.6;
-    border:1.5px solid color-mix(in srgb, var(--tint,#E8A33D) 55%, transparent);
-    box-shadow:0 0 72px 6px color-mix(in srgb, var(--tint,#E8A33D) 32%, transparent),
-               inset 0 0 50px color-mix(in srgb, var(--tint,#E8A33D) 14%, transparent);
-    animation:orbitpulse 6.5s ease-in-out infinite}
-  @keyframes orbitpulse{0%,100%{opacity:.42}50%{opacity:.82}}
   .showcase{position:relative;z-index:2;width:clamp(440px,60%,800px);height:324px;border-radius:46px;overflow:hidden;
     border:1px solid var(--line);background:radial-gradient(95% 120% at 50% -18%, var(--tint,#E8A33D40), transparent 62%),linear-gradient(180deg,var(--card),var(--paper-2));
     box-shadow:0 30px 60px -26px rgba(var(--shadow),.55), inset 0 1px 0 rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;padding:18px}
@@ -275,15 +265,13 @@
     .showcase{width:min(540px,92%)}
     /* no cursor on touch: reveal the enhanced layer fully, no mask */
     .sc-spot{opacity:1;-webkit-mask-image:none;mask-image:none}
-    /* pucks are a static list on mobile — orbit ring has no meaning */
-    .orbit-ring{display:none}
   }
   @media(max-width:820px){
     .showcase{height:240px}.puck{width:68px;height:68px}.puck .ic{font-size:14px}
     .wbanner{flex-direction:column;min-height:0;text-align:center}.winfo{flex:none;max-width:100%}.wprev{height:170px}
   }
   @media(prefers-reduced-motion:reduce){
-    .hero-img,.puck,.sc-img,.orbit-ring{animation:none}
+    .hero-img,.puck,.sc-img{animation:none}
     .slot.reveal{opacity:1;translate:none}
     /* show the enhanced skin statically instead of a moving spotlight */
     .sc-spot{opacity:1;-webkit-mask-image:none;mask-image:none}
