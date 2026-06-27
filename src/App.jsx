@@ -299,6 +299,24 @@ export default function App() {
     setColH(H)
   }, [db, vw, multi])
 
+  // spotlight reveal on the showcase: cursor-following radial mask exposes the
+  // enhanced "glow" copy of the skin. Desktop only; updates CSS vars directly.
+  useEffect(() => {
+    if (isMobile || !featuredW) return
+    const card = showcaseRef.current
+    if (!card) return
+    // start centred so the first frame after enter looks right
+    card.style.setProperty('--mx', '50%')
+    card.style.setProperty('--my', '50%')
+    const onMove = (e) => {
+      const r = card.getBoundingClientRect()
+      card.style.setProperty('--mx', (e.clientX - r.left) + 'px')
+      card.style.setProperty('--my', (e.clientY - r.top) + 'px')
+    }
+    card.addEventListener('mousemove', onMove)
+    return () => card.removeEventListener('mousemove', onMove)
+  }, [isMobile, featuredW?.uuid])
+
   // scroll-reveal for inventory cards — each slot fades + slides into place as
   // it enters the viewport. Revealed uuids are tracked in state (not via raw
   // classList) so the class survives React re-renders without flashing.
@@ -621,7 +639,13 @@ export default function App() {
         <div className="showcase" ref={showcaseRef}>
           <div className="halo" />
           {img
-            ? (<><img className="sc-img" src={img} alt={s.name} onError={(ev) => hideTo(ev, 'flex')} /><div className="sc-ph" style={{ display: 'none' }}>{s.name}</div></>)
+            ? (<>
+                {/* base muted layer */}
+                <img className="sc-img" src={img} alt={s.name} onError={(ev) => hideTo(ev, 'flex')} />
+                {/* enhanced layer revealed through a cursor-following radial mask */}
+                <div className="sc-spot" aria-hidden="true"><img className="sc-img sc-img--glow" src={img} alt="" /></div>
+                <div className="sc-ph" style={{ display: 'none' }}>{s.name}</div>
+              </>)
             : (<div className="sc-ph">{s.name}</div>)}
           <div className="sc-meta">
             {s.tierName && <span className="sc-tier"><i />{s.tierName} edice</span>}
