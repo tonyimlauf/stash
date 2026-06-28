@@ -259,11 +259,13 @@
 
   /* ---- VALORANT-style agent picking screen ---- */
   .apick{position:fixed;inset:0;z-index:200;display:flex;flex-direction:row-reverse;background:#0E1216;color:#ECE8DF}
-  .apick-stage{flex:1;min-width:0;position:relative;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;
+  .apick-stage{flex:1;min-width:0;position:relative;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;background:#0E1216}
+  /* atmosphere layer holds the agent gradient + bg image so it can fade as one unit */
+  .apick-atmo{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:1;
     background:radial-gradient(90% 70% at 50% 18%, var(--a2,#2b3138), transparent 62%),linear-gradient(165deg, var(--a0,#1F2326), var(--a3,#0B0E11) 92%)}
   .apick-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.16;mix-blend-mode:luminosity;pointer-events:none}
   .apick-portrait{position:relative;z-index:2;max-height:94%;max-width:80%;object-fit:contain;filter:drop-shadow(0 30px 50px rgba(0,0,0,.6));
-    animation:apickrise .5s cubic-bezier(.22,.61,.36,1)}
+    will-change:transform,opacity;animation:apickrise .5s cubic-bezier(.22,.61,.36,1)}
   @keyframes apickrise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
   .apick-info{position:absolute;z-index:3;left:6%;bottom:8%;max-width:60%}
   .apick-role{display:inline-flex;align-items:center;gap:8px;font:600 12px "DM Sans";letter-spacing:.2em;text-transform:uppercase;color:rgba(236,232,223,.82);margin-bottom:6px}
@@ -293,11 +295,15 @@
     .apick-grid{grid-template-columns:repeat(auto-fill,minmax(52px,1fr))}
   }
 
-  /* ---- lock-in transition: picker gets sucked into the black hole ---- */
-  .apick--leaving{animation:apickSuck .64s cubic-bezier(.55,0,.95,.45) forwards;transform-origin:center;pointer-events:none}
-  @keyframes apickSuck{to{transform:scale(.04) rotate(200deg);opacity:0}}
-  .apick--leaving .apick-portrait{animation:portraitSuck .64s cubic-bezier(.55,0,.95,.45) forwards}
-  @keyframes portraitSuck{to{transform:scale(.2) rotate(360deg);opacity:0}}
+  /* ---- lock-in transition ---- */
+  /* step 1: the moment lock-in starts, the chrome + atmosphere fade out (opacity
+     only) leaving the portrait alone — the background never enters the void */
+  .apick[data-x] .apick-atmo,
+  .apick[data-x] .apick-roster,
+  .apick[data-x] .apick-info{opacity:0;transition:opacity .2s ease;pointer-events:none}
+  /* step 2: only the lone portrait gets pulled into the black hole (transform+opacity) */
+  .apick[data-x="sucking"] .apick-portrait{animation:portraitSuck .54s cubic-bezier(.5,0,.95,.45) forwards}
+  @keyframes portraitSuck{from{transform:scale(1) rotate(0)}to{transform:scale(.12) rotate(360deg);opacity:0}}
 
   /* ---- black hole + explosion overlay ---- */
   .xtion{position:fixed;inset:0;z-index:300;display:grid;place-items:center;overflow:hidden;pointer-events:auto;background:transparent}
@@ -308,8 +314,8 @@
   .xtion-ring{position:absolute;width:30vmax;height:30vmax;border-radius:50%;transform:scale(0);opacity:0;will-change:transform,opacity;
     border:3px solid var(--ax,#2E8BA0);box-shadow:0 0 40px 6px var(--ax,#2E8BA0)}
 
-  /* phase: sucking — void grows from the centre and swallows the screen */
-  .xtion--sucking .xtion-hole{animation:holeGrow .64s cubic-bezier(.5,0,.9,.45) forwards}
+  /* phase: sucking — void grows from the centre and swallows the lone portrait */
+  .xtion--sucking .xtion-hole{animation:holeGrow .54s cubic-bezier(.5,0,.9,.45) forwards}
   @keyframes holeGrow{from{transform:scale(0)}to{transform:scale(1)}}
   /* phase: void — full black beat */
   .xtion--void .xtion-hole{transform:scale(1)}

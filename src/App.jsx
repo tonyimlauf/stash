@@ -614,11 +614,12 @@ export default function App() {
     try { localStorage.setItem('stash.agent', pickSel) } catch (e) { /* ignore */ }
     const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduce) { setShowPicker(false); return }
-    // cinematic black-hole transition: suck → void → explode → reveal app
-    setPhase('sucking')
-    setTimeout(() => { setPhase('void'); setShowPicker(false) }, 640)   // collapse done → drop picker, app behind
-    setTimeout(() => { setPhase('exploding') }, 860)                    // beat of black, then burst
-    setTimeout(() => { setPhase(null) }, 1480)                          // overlay gone, app interactive
+    // cinematic transition: background vanishes → agent alone → sucked into void → explosion → app
+    setPhase('bgout')                                                   // chrome/atmosphere fades, portrait stays
+    setTimeout(() => { setPhase('sucking') }, 200)                      // only the portrait gets pulled in
+    setTimeout(() => { setPhase('void'); setShowPicker(false) }, 740)   // collapse done → drop picker, app behind
+    setTimeout(() => { setPhase('exploding') }, 940)                    // beat of black, then burst
+    setTimeout(() => { setPhase(null) }, 1560)                          // overlay gone, app interactive
   }
   const openPicker = () => { setPickSel(agentId || pickSel || (agents[0] && agents[0].uuid) || null); setShowPicker(true) }
 
@@ -879,9 +880,12 @@ export default function App() {
         }
       : {}
     return (
-      <div className={'apick' + (phase === 'sucking' ? ' apick--leaving' : '')} role="dialog" aria-label="Výběr agenta">
+      <div className="apick" data-x={phase || undefined} role="dialog" aria-label="Výběr agenta">
         <div className="apick-stage" style={stageStyle}>
-          {pickAgent && pickAgent.background && <img className="apick-bg" src={pickAgent.background} alt="" aria-hidden="true" />}
+          {/* atmosphere layer (gradient + bg) — fades out first on lock-in, separate from the portrait */}
+          <div className="apick-atmo">
+            {pickAgent && pickAgent.background && <img className="apick-bg" src={pickAgent.background} alt="" aria-hidden="true" />}
+          </div>
           {pickAgent
             ? (
               <>
@@ -930,8 +934,8 @@ export default function App() {
       {/* agent picking screen — shown on first load / when reopened */}
       {showPicker && renderPicker()}
 
-      {/* cinematic black-hole → explosion transition after LOCK IN */}
-      {phase && renderTransition()}
+      {/* cinematic black-hole → explosion transition after LOCK IN (after bg fades) */}
+      {phase && phase !== 'bgout' && renderTransition()}
 
       {/* big intro logo — fixed, shrinks into top bar on scroll */}
       <div ref={heroStampRef} className="hero-stamp">
