@@ -275,7 +275,11 @@
     padding:14px 38px;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);transition:.15s}
   .apick-lock:hover{background:#fff;transform:translateX(2px)}
   .apick-empty{margin:auto;color:rgba(236,232,223,.6);font:600 16px "DM Sans"}
-  .apick-roster{flex:0 0 360px;max-width:38vw;display:flex;flex-direction:column;background:rgba(8,11,14,.72);border-right:1px solid rgba(255,255,255,.06);backdrop-filter:blur(6px)}
+  .apick-roster{flex:0 0 360px;max-width:38vw;display:flex;flex-direction:column;background:rgba(8,11,14,.72);border-right:1px solid rgba(255,255,255,.06)}
+  /* apply the (expensive) backdrop blur ONLY when not transitioning, so it's gone
+     during the animation. Done as a positive rule because minifiers strip
+     `backdrop-filter:none` (it's the initial value) and the override would be lost. */
+  .apick:not([data-x]) .apick-roster{-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
   .apick-roster-head{flex:0 0 auto;padding:20px 20px 12px;font:700 13px "Space Grotesk";letter-spacing:.18em;text-transform:uppercase;color:rgba(236,232,223,.7);display:flex;align-items:center;gap:8px}
   .apick-roster-head span{font:700 11px "Space Mono";color:#11151A;background:#ECE8DF;border-radius:999px;padding:2px 8px}
   .apick-grid{flex:1;min-height:0;overflow-y:auto;padding:4px 16px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:8px;align-content:start}
@@ -301,18 +305,27 @@
   .apick[data-x] .apick-atmo,
   .apick[data-x] .apick-roster,
   .apick[data-x] .apick-info{opacity:0;transition:opacity .2s ease;pointer-events:none}
-  /* step 2: only the lone portrait gets pulled into the black hole (transform+opacity) */
+  /* (roster backdrop blur is applied only via .apick:not([data-x]) above, so it's
+     already absent here during the whole transition — the biggest perf win) */
+  /* step 2: only the lone portrait gets pulled into the black hole (transform+opacity).
+     PERF: drop its drop-shadow filter — rotating a filtered element re-rasterizes the
+     shadow each frame; without it the portrait is a pure compositor transform. */
+  .apick[data-x] .apick-portrait{filter:none}
   .apick[data-x="sucking"] .apick-portrait{animation:portraitSuck .54s cubic-bezier(.5,0,.95,.45) forwards}
   @keyframes portraitSuck{from{transform:scale(1) rotate(0)}to{transform:scale(.12) rotate(360deg);opacity:0}}
 
   /* ---- black hole + explosion overlay ---- */
-  .xtion{position:fixed;inset:0;z-index:300;display:grid;place-items:center;overflow:hidden;pointer-events:auto;background:transparent}
+  /* isolate so these compose against each other, never the page behind */
+  .xtion{position:fixed;inset:0;z-index:300;display:grid;place-items:center;overflow:hidden;pointer-events:auto;background:transparent;isolation:isolate}
+  /* every overlay layer animates transform+opacity ONLY; all glows are baked into
+     pre-rendered radial-gradients (no mix-blend-mode, no box-shadow, no filter) so
+     each is a single static-paint compositor layer that's only scaled/faded. */
   .xtion-hole{width:150vmax;height:150vmax;border-radius:50%;transform:scale(0);will-change:transform,opacity;
     background:radial-gradient(circle, #000 56%, rgba(0,0,0,.9) 72%, transparent 100%)}
-  .xtion-burst{position:absolute;width:70vmax;height:70vmax;border-radius:50%;transform:scale(0);opacity:0;will-change:transform,opacity;mix-blend-mode:screen;
-    background:radial-gradient(circle, #fff 0%, var(--ax,#2E8BA0) 16%, color-mix(in srgb,var(--ax,#2E8BA0) 70%,transparent) 34%, transparent 60%)}
-  .xtion-ring{position:absolute;width:30vmax;height:30vmax;border-radius:50%;transform:scale(0);opacity:0;will-change:transform,opacity;
-    border:3px solid var(--ax,#2E8BA0);box-shadow:0 0 40px 6px var(--ax,#2E8BA0)}
+  .xtion-burst{position:absolute;width:70vmax;height:70vmax;border-radius:50%;transform:scale(0);opacity:0;will-change:transform,opacity;
+    background:radial-gradient(circle, #fff 0%, #fff 8%, var(--ax,#2E8BA0) 20%, color-mix(in srgb,var(--ax,#2E8BA0) 55%,transparent) 38%, transparent 62%)}
+  .xtion-ring{position:absolute;width:46vmax;height:46vmax;border-radius:50%;transform:scale(0);opacity:0;will-change:transform,opacity;
+    background:radial-gradient(circle, transparent 40%, color-mix(in srgb,var(--ax,#2E8BA0) 85%,transparent) 47%, var(--ax,#2E8BA0) 50%, transparent 56%)}
 
   /* phase: sucking — void grows from the centre and swallows the lone portrait */
   .xtion--sucking .xtion-hole{animation:holeGrow .54s cubic-bezier(.5,0,.9,.45) forwards}

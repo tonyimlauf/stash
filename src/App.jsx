@@ -167,6 +167,7 @@ export default function App() {
   const showcaseRef = useRef(null)
   const puckEls = useRef([])   // [el0..el4] set via callback refs in renderShowcase
   const dimsRef = useRef({ sW: 0, sH: 0, cW: 0, cH: 0 })
+  const transRef = useRef(false) // true while the lock-in transition plays — pauses physics so the compositor has the main thread
 
   // load data once
   useEffect(() => {
@@ -461,6 +462,10 @@ export default function App() {
       const dt = Math.min((ts - lastTs) / 1000, 0.05)
       lastTs = ts
 
+      // pause all physics work while the lock-in transition plays so its CSS
+      // animations own the frame budget; keep the rAF alive but do nothing
+      if (transRef.current) { rafId = requestAnimationFrame(loop); return }
+
       const { sW, sH, cW, cH, cx, cy } = dimsRef.current
       const halfW = sW/2 - PUCK_R
       const halfH = sH/2 - PUCK_R
@@ -615,11 +620,12 @@ export default function App() {
     const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduce) { setShowPicker(false); return }
     // cinematic transition: background vanishes → agent alone → sucked into void → explosion → app
+    transRef.current = true                                             // pause bubble physics for the duration
     setPhase('bgout')                                                   // chrome/atmosphere fades, portrait stays
     setTimeout(() => { setPhase('sucking') }, 200)                      // only the portrait gets pulled in
     setTimeout(() => { setPhase('void'); setShowPicker(false) }, 740)   // collapse done → drop picker, app behind
     setTimeout(() => { setPhase('exploding') }, 940)                    // beat of black, then burst
-    setTimeout(() => { setPhase(null) }, 1560)                          // overlay gone, app interactive
+    setTimeout(() => { setPhase(null); transRef.current = false }, 1560) // overlay gone, app interactive, physics resumes
   }
   const openPicker = () => { setPickSel(agentId || pickSel || (agents[0] && agents[0].uuid) || null); setShowPicker(true) }
 
