@@ -7,7 +7,9 @@
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   body{
-    background:linear-gradient(180deg, #F4EEE0 0%, #E8DDC6 48%, #EFE7D6 80%, #F7F1E4 100%);
+    background:
+      radial-gradient(120% 80% at 50% -10%, color-mix(in srgb, var(--agent,#E8A33D) 9%, transparent), transparent 58%),
+      linear-gradient(180deg, #F4EEE0 0%, #E8DDC6 48%, #EFE7D6 80%, #F7F1E4 100%);
     color:var(--ink);font-family:"DM Sans",system-ui,sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;
   }
   /* glossy "polished showroom floor": agent-tinted top glow, a bright sheen, and a
@@ -49,8 +51,10 @@
   /* agent imagery scattered as slightly-rotated decals around the ring */
   .landing-sticker{position:absolute;object-fit:cover;border-radius:16px;background:rgba(255,255,255,.55);
     border:3px solid #fff;box-shadow:0 10px 24px -6px rgba(var(--shadow),.5);will-change:transform}
+  /* face-icon decal: small square, tilted left */
   .lsk1{width:clamp(58px,7vw,96px);aspect-ratio:1;top:20%;left:17%;transform:rotate(-12deg);animation:stickFloat 6s ease-in-out infinite}
-  .lsk2{width:clamp(50px,6vw,84px);aspect-ratio:1;top:24%;right:16%;transform:rotate(10deg);animation:stickFloat 7s ease-in-out infinite .8s}
+  /* bust/killfeed decal: taller portrait crop, bigger, tilted the other way */
+  .lsk2{width:clamp(70px,8vw,118px);aspect-ratio:3/4;object-position:top center;top:15%;right:14%;border-radius:18px;transform:rotate(7deg);animation:stickFloat 7.5s ease-in-out infinite .8s}
   /* fullPortrait is a transparent cutout — show as a borderless decal peeking in */
   .lsk-portrait{width:clamp(120px,15vw,210px);aspect-ratio:3/4;object-fit:cover;object-position:top center;
     bottom:9%;right:11%;border:0;border-radius:18px;background:transparent;
@@ -122,11 +126,13 @@
   .puck::after{content:attr(data-label);position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(4px);background:var(--ink);color:#FBF6EA;font:600 11px "DM Sans";white-space:nowrap;padding:6px 10px;border-radius:8px;opacity:0;pointer-events:none;transition:.2s;z-index:9}
   .puck:hover::after{opacity:1;transform:translateX(-50%) translateY(0)}
   .puck.accent{border-color:var(--tint,#E8A33D)}
-  /* JS physics drives all puck movement — no CSS animation on pucks */
-  .puck.p2{border-color:var(--cobalt)}
-  .puck.p3{border-color:var(--jade)}
-  .puck.p4{border-color:var(--plum)}
-  .puck.p5{border-color:var(--marigold)}
+  /* JS physics drives all puck movement — no CSS animation on pucks.
+     Borders lean to the agent tint but keep a faint individual hue so the set
+     stays themed without going flat-monochrome. */
+  .puck.p2{border-color:color-mix(in srgb, var(--tint,#E8A33D) 78%, var(--cobalt))}
+  .puck.p3{border-color:color-mix(in srgb, var(--tint,#E8A33D) 78%, var(--jade))}
+  .puck.p4{border-color:color-mix(in srgb, var(--tint,#E8A33D) 78%, var(--plum))}
+  .puck.p5{border-color:color-mix(in srgb, var(--tint,#E8A33D) 78%, var(--marigold))}
   /* slow zero-gravity hover: gentle up/down with a very slight rotation drift,
      layered on top of the base -8deg tilt */
   @keyframes floaty{

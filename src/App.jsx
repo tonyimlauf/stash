@@ -231,11 +231,15 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // expose the selected agent's accent color to CSS (neon ring + glossy bg tint)
+  // expose the selected agent's accent color to CSS. --agent drives the neon ring
+  // and glossy bg; overriding --tint at the root themes every generic accent across
+  // the whole site (showcase glow, stat bubbles, fallbacks) toward the agent's hue.
   useEffect(() => {
     const a = agents.find((x) => x.uuid === agentId)
     const acc = a ? brightestHex(a) : '#E8A33D'
-    document.documentElement.style.setProperty('--agent', acc)
+    const root = document.documentElement.style
+    root.setProperty('--agent', acc)
+    root.setProperty('--tint', acc)
   }, [agentId, agents])
 
   // track viewport width
@@ -651,8 +655,6 @@ export default function App() {
 
   const hideTo = (e, disp) => { e.currentTarget.style.display = 'none'; const s = e.currentTarget.nextElementSibling; if (s) s.style.display = disp }
 
-  const featuredTint = featuredW ? db.skins[active[featuredW.uuid].skinUuid].tint : '#C9BA98'
-
   // ---- agent select derived values + handlers ----
   const agent = agents.find((a) => a.uuid === agentId) || null          // active (locked-in) agent
   const pickAgent = agents.find((a) => a.uuid === pickSel) || null       // highlighted in the picker
@@ -996,8 +998,12 @@ export default function App() {
         </svg>
         {agent && (
           <>
+            {/* face-icon decal */}
             <img className="landing-sticker lsk1" src={agent.displayIcon} alt="" />
-            <img className="landing-sticker lsk2" src={agent.displayIcon} alt="" />
+            {/* a different render (bust / killfeed) so the two don't look copy-pasted */}
+            {(agent.bustPortrait || agent.killfeedPortrait || agent.displayIconSmall) &&
+              <img className="landing-sticker lsk2" src={agent.bustPortrait || agent.killfeedPortrait || agent.displayIconSmall} alt="" />}
+            {/* full-body cutout on the side */}
             {agent.fullPortrait && <img className="landing-sticker lsk-portrait" src={agent.fullPortrait} alt="" />}
           </>
         )}
@@ -1023,7 +1029,7 @@ export default function App() {
           <div className="total"><span className="k">Hodnota</span><span className="v">{fmt(totals.sum)} <small>VP</small></span></div>
         </div>
 
-        <section className="hero" style={{ '--tint': featuredTint }}>
+        <section className="hero">
           <div className="hero-stage" ref={stageRef}>
             {!db
               ? <div className="loading" style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>Načítám zbraně z Valorantu…</div>
