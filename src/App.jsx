@@ -162,6 +162,7 @@ export default function App() {
   const gridRef = useRef(null)
   const modeExitRef = useRef(null) // { mode, search, time } snapshot taken when leaving a skin-picker mode
   const heroStampRef = useRef(null)
+  const landingRef = useRef(null)
   const topRef = useRef(null)
   const stageRef = useRef(null)
   const showcaseRef = useRef(null)
@@ -203,6 +204,13 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // expose the selected agent's accent color to CSS (neon ring + glossy bg tint)
+  useEffect(() => {
+    const a = agents.find((x) => x.uuid === agentId)
+    const acc = a ? brightestHex(a) : '#E8A33D'
+    document.documentElement.style.setProperty('--agent', acc)
+  }, [agentId, agents])
+
   // track viewport width
   useEffect(() => {
     const onR = () => setVw(window.innerWidth)
@@ -221,6 +229,7 @@ export default function App() {
   useEffect(() => {
     const stamp = heroStampRef.current
     const top = topRef.current
+    const landing = landingRef.current
     const barLogo = top?.querySelector('.logo-svg')
 
     let lastY = window.scrollY
@@ -258,6 +267,13 @@ export default function App() {
         stamp.style.transform = `scale(${scale})`
         // fade out stamp while bar logo fades in
         stamp.style.opacity = raw > 0.78 ? String(1 - (raw - 0.78) / 0.22) : '1'
+      }
+
+      // ── landing decor (neon ring + stickers): fade + drift up as you scroll in ──
+      if (landing) {
+        const lo = raw < 0.5 ? 1 - raw / 0.5 : 0
+        landing.style.opacity = String(lo)
+        landing.style.transform = `translateY(${-raw * 40}px)`
       }
 
       // ── bar logo crossfade ──
@@ -942,6 +958,21 @@ export default function App() {
 
       {/* cinematic black-hole → explosion transition after LOCK IN (after bg fades) */}
       {phase && phase !== 'bgout' && renderTransition()}
+
+      {/* glossy reflective showroom-floor background, tinted by the agent accent */}
+      <div className="gloss" aria-hidden="true" />
+
+      {/* landing decor: neon ring framing the logo + agent stickers (fades on scroll) */}
+      <div ref={landingRef} className="landing" aria-hidden="true">
+        <div className="landing-ring" />
+        {agent && (
+          <>
+            <img className="landing-sticker lsk1" src={agent.displayIcon} alt="" />
+            <img className="landing-sticker lsk2" src={agent.displayIcon} alt="" />
+            {agent.fullPortrait && <img className="landing-sticker lsk-portrait" src={agent.fullPortrait} alt="" />}
+          </>
+        )}
+      </div>
 
       {/* big intro logo — fixed, shrinks into top bar on scroll */}
       <div ref={heroStampRef} className="hero-stamp">
