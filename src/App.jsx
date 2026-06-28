@@ -38,32 +38,20 @@ const brightestHex = (a) => {
   return agentHex(best)
 }
 
-// Neon ring: 5 tapering arc segments (thick "head" → thin "tail") evenly spaced
-// 72° apart. The sharp thin→thick step at each segment boundary reads as a leading
-// edge, faking a clockwise spin — the ring itself never animates. Geometry is fixed
-// (filled bands centred on radius R, half-width lerped thick→thin along each arc).
-const NEON_RING_PATHS = (() => {
-  const cx = 100, cy = 100, R = 84, thickHalf = 8.5, thinHalf = 1.4, segs = 5, samples = 26
-  const paths = []
-  for (let s = 0; s < segs; s++) {
-    const a0 = (s / segs) * Math.PI * 2
-    const a1 = a0 + (Math.PI * 2) / segs
-    const outer = [], inner = []
-    for (let k = 0; k <= samples; k++) {
-      const t = k / samples
-      const a = a0 + (a1 - a0) * t
-      const hw = thickHalf + (thinHalf - thickHalf) * t // thick head → thin tail
-      const c = Math.cos(a), sn = Math.sin(a)
-      outer.push([cx + (R + hw) * c, cy + (R + hw) * sn])
-      inner.push([cx + (R - hw) * c, cy + (R - hw) * sn])
-    }
-    let d = 'M' + outer[0][0].toFixed(2) + ' ' + outer[0][1].toFixed(2)
-    for (let k = 1; k < outer.length; k++) d += 'L' + outer[k][0].toFixed(2) + ' ' + outer[k][1].toFixed(2)
-    for (let k = inner.length - 1; k >= 0; k--) d += 'L' + inner[k][0].toFixed(2) + ' ' + inner[k][1].toFixed(2)
-    paths.push(d + 'Z')
-  }
-  return paths
-})()
+// Liquid-capsule ring: a glass tube (radius RING_R) with 5 blobs flowing clockwise
+// inside it via SVG animateMotion. All blobs share RING_DUR so the 72° spacing holds;
+// each is phase-offset by a negative begin. Sizes vary slightly for an organic feel.
+const RING_R = 84
+// circular motion path, clockwise from the top (sweep-flag 1)
+const RING_PATH = `M100,${100 - RING_R} A${RING_R},${RING_R} 0 0 1 ${100 + RING_R},100 A${RING_R},${RING_R} 0 0 1 100,${100 + RING_R} A${RING_R},${RING_R} 0 0 1 ${100 - RING_R},100 A${RING_R},${RING_R} 0 0 1 100,${100 - RING_R} Z`
+const RING_DUR = 5.4 // seconds per revolution
+const BLOBS = [
+  { rx: 14.5, ry: 10.5, br: 3.0 },
+  { rx: 12.5, ry: 9.5, br: 3.6 },
+  { rx: 15.5, ry: 11, br: 2.6 },
+  { rx: 13, ry: 9, br: 3.2 },
+  { rx: 14, ry: 10, br: 3.0 },
+]
 
 // column layout — mirrors Valorant: Sidearms | SMGs+Shotguns+Melee | Rifles | Snipers+Machine guns
 function colsConfig(w) {
@@ -170,6 +158,7 @@ export default function App() {
   const [agentId, setAgentId] = useState(() => { try { return localStorage.getItem('stash.agent') || null } catch { return null } })
   const [showPicker, setShowPicker] = useState(() => { try { return !localStorage.getItem('stash.agent') } catch { return true } })
   const [pickSel, setPickSel] = useState(null) // uuid highlighted in the picker (not yet locked in)
+  const [reduceMo] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
   const [phase, setPhase] = useState(null)     // lock-in transition: null|'sucking'|'void'|'exploding'
   const [weaponTarget, setWeaponTarget] = useState(null) // weapon uuid for the big modal
   const [buddyTarget, setBuddyTarget] = useState(null)    // weapon uuid we're attaching a buddy to
@@ -994,7 +983,37 @@ export default function App() {
       {/* landing decor: neon ring framing the logo + agent stickers (fades on scroll) */}
       <div ref={landingRef} className="landing" aria-hidden="true">
         <svg className="landing-ring" viewBox="0 0 200 200">
-          {NEON_RING_PATHS.map((d, i) => <path key={i} d={d} />)}
+          <defs>
+            <filter id="blobGlow" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="2.6" result="b" />
+              <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+            {/* annulus = the tube interior; blobs are clipped to it so they stay in the pipe */}
+            <clipPath id="tubeClip">
+              <path clipRule="evenodd" d="M5,100 a95,95 0 1,0 190,0 a95,95 0 1,0 -190,0 M27,100 a73,73 0 1,0 146,0 a73,73 0 1,0 -146,0" />
+            </clipPath>
+          </defs>
+          {/* glass tube wall + faint rims */}
+          <circle className="tube-wall" cx="100" cy="100" r={RING_R} />
+          <circle className="tube-rim" cx="100" cy="100" r="95" />
+          <circle className="tube-rim" cx="100" cy="100" r="73" />
+          {/* flowing liquid blobs, clipped & glowing */}
+          <g clipPath="url(#tubeClip)" filter="url(#blobGlow)">
+            {BLOBS.map((b, i) => {
+              if (reduceMo) {
+                // static: park 5 blobs evenly at 72° (no animation)
+                const a = (-90 + i * 72) * Math.PI / 180
+                return <ellipse key={i} className="blob" rx={b.rx} ry={b.ry} cx={100 + RING_R * Math.cos(a)} cy={100 + RING_R * Math.sin(a)} />
+              }
+              return (
+                <ellipse key={i} className="blob" rx={b.rx} ry={b.ry} cx="0" cy="0">
+                  <animateMotion dur={`${RING_DUR}s`} begin={`-${(i / BLOBS.length) * RING_DUR}s`} repeatCount="indefinite" rotate="auto" calcMode="linear" path={RING_PATH} />
+                  <animate attributeName="rx" values={`${b.rx};${b.rx + b.br};${b.rx}`} dur={`${3.2 + i * 0.5}s`} repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" />
+                  <animate attributeName="ry" values={`${b.ry};${b.ry + b.br * 0.7};${b.ry}`} dur={`${3.8 + i * 0.4}s`} repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" />
+                </ellipse>
+              )
+            })}
+          </g>
         </svg>
         {agent && (
           <>

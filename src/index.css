@@ -43,11 +43,13 @@
 
   /* ---- agent-themed landing decor (first screen): neon ring + stickers ---- */
   .landing{position:fixed;inset:0;z-index:58;pointer-events:none;display:grid;place-items:center;will-change:transform,opacity}
-  /* neon ring (SVG): 5 tapering thick→thin segments faking a clockwise spin.
-     Static (no rotation) — the variable thickness alone creates the illusion. */
+  /* liquid-capsule ring: a glass tube with 5 agent-colored blobs flowing clockwise.
+     Soft outer halo via drop-shadow; the blob glow itself is an SVG feGaussianBlur. */
   .landing-ring{width:clamp(340px,50vw,620px);height:auto;display:block;overflow:visible;
-    filter:drop-shadow(0 0 5px var(--agent,#E8A33D)) drop-shadow(0 0 15px color-mix(in srgb, var(--agent,#E8A33D) 70%, transparent))}
-  .landing-ring path{fill:var(--agent,#E8A33D)}
+    filter:drop-shadow(0 0 12px color-mix(in srgb, var(--agent,#E8A33D) 50%, transparent))}
+  .landing-ring .tube-wall{fill:none;stroke:rgba(8,12,16,.5);stroke-width:22}
+  .landing-ring .tube-rim{fill:none;stroke:rgba(255,255,255,.16);stroke-width:1}
+  .landing-ring .blob{fill:var(--agent,#E8A33D);opacity:.72}
   /* agent imagery scattered as slightly-rotated decals around the ring */
   .landing-sticker{position:absolute;object-fit:cover;border-radius:16px;background:rgba(255,255,255,.55);
     border:3px solid #fff;box-shadow:0 10px 24px -6px rgba(var(--shadow),.5);will-change:transform}
