@@ -41,16 +41,11 @@
 
   /* ---- agent-themed landing decor (first screen): neon ring + stickers ---- */
   .landing{position:fixed;inset:0;z-index:58;pointer-events:none;display:grid;place-items:center;will-change:transform,opacity}
-  /* neon ring framing the centred logo — bright outline + soft agent-colored halo */
-  .landing-ring{width:clamp(330px,48vw,600px);aspect-ratio:1;border-radius:50%;
-    border:2px solid color-mix(in srgb, var(--agent,#E8A33D) 88%, #fff);
-    box-shadow:
-      0 0 22px 2px var(--agent,#E8A33D),
-      0 0 70px 10px color-mix(in srgb, var(--agent,#E8A33D) 45%, transparent),
-      inset 0 0 42px color-mix(in srgb, var(--agent,#E8A33D) 22%, transparent),
-      inset 0 0 0 1px rgba(255,255,255,.35);
-    animation:neonPulse 4.5s ease-in-out infinite;will-change:transform}
-  @keyframes neonPulse{0%,100%{transform:scale(1);opacity:.92}50%{transform:scale(1.025);opacity:1}}
+  /* neon ring (SVG): 5 tapering thick→thin segments faking a clockwise spin.
+     Static (no rotation) — the variable thickness alone creates the illusion. */
+  .landing-ring{width:clamp(340px,50vw,620px);height:auto;display:block;overflow:visible;
+    filter:drop-shadow(0 0 5px var(--agent,#E8A33D)) drop-shadow(0 0 15px color-mix(in srgb, var(--agent,#E8A33D) 70%, transparent))}
+  .landing-ring path{fill:var(--agent,#E8A33D)}
   /* agent imagery scattered as slightly-rotated decals around the ring */
   .landing-sticker{position:absolute;object-fit:cover;border-radius:16px;background:rgba(255,255,255,.55);
     border:3px solid #fff;box-shadow:0 10px 24px -6px rgba(var(--shadow),.5);will-change:transform}

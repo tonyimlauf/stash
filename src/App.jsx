@@ -38,6 +38,33 @@ const brightestHex = (a) => {
   return agentHex(best)
 }
 
+// Neon ring: 5 tapering arc segments (thick "head" → thin "tail") evenly spaced
+// 72° apart. The sharp thin→thick step at each segment boundary reads as a leading
+// edge, faking a clockwise spin — the ring itself never animates. Geometry is fixed
+// (filled bands centred on radius R, half-width lerped thick→thin along each arc).
+const NEON_RING_PATHS = (() => {
+  const cx = 100, cy = 100, R = 84, thickHalf = 8.5, thinHalf = 1.4, segs = 5, samples = 26
+  const paths = []
+  for (let s = 0; s < segs; s++) {
+    const a0 = (s / segs) * Math.PI * 2
+    const a1 = a0 + (Math.PI * 2) / segs
+    const outer = [], inner = []
+    for (let k = 0; k <= samples; k++) {
+      const t = k / samples
+      const a = a0 + (a1 - a0) * t
+      const hw = thickHalf + (thinHalf - thickHalf) * t // thick head → thin tail
+      const c = Math.cos(a), sn = Math.sin(a)
+      outer.push([cx + (R + hw) * c, cy + (R + hw) * sn])
+      inner.push([cx + (R - hw) * c, cy + (R - hw) * sn])
+    }
+    let d = 'M' + outer[0][0].toFixed(2) + ' ' + outer[0][1].toFixed(2)
+    for (let k = 1; k < outer.length; k++) d += 'L' + outer[k][0].toFixed(2) + ' ' + outer[k][1].toFixed(2)
+    for (let k = inner.length - 1; k >= 0; k--) d += 'L' + inner[k][0].toFixed(2) + ' ' + inner[k][1].toFixed(2)
+    paths.push(d + 'Z')
+  }
+  return paths
+})()
+
 // column layout — mirrors Valorant: Sidearms | SMGs+Shotguns+Melee | Rifles | Snipers+Machine guns
 function colsConfig(w) {
   if (w >= 1024) return [
@@ -964,7 +991,9 @@ export default function App() {
 
       {/* landing decor: neon ring framing the logo + agent stickers (fades on scroll) */}
       <div ref={landingRef} className="landing" aria-hidden="true">
-        <div className="landing-ring" />
+        <svg className="landing-ring" viewBox="0 0 200 200">
+          {NEON_RING_PATHS.map((d, i) => <path key={i} d={d} />)}
+        </svg>
         {agent && (
           <>
             <img className="landing-sticker lsk1" src={agent.displayIcon} alt="" />
