@@ -26,6 +26,17 @@ const skinImageUrl = (s, ci, w) => { if (!s) return w.img; if (s.isStandard) ret
 // agent colors come as an array of 8-digit hex strings (RRGGBBAA); build CSS hex from them
 const agentHex = (c) => (c ? '#' + c : '#1F2326')
 const agentColors = (a) => (a && a.colors && a.colors.length ? a.colors : ['1F2326FF', '0F1419FF'])
+// pick the most vivid color from an agent's palette for the explosion glow
+const brightestHex = (a) => {
+  const cs = agentColors(a)
+  let best = cs[0], score = -1
+  for (const c of cs) {
+    const r = parseInt(c.slice(0, 2), 16), g = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16)
+    const s = r + g + b - Math.abs(r - g) - Math.abs(g - b) // bright but saturated
+    if (s > score) { score = s; best = c }
+  }
+  return agentHex(best)
+}
 
 // column layout — mirrors Valorant: Sidearms | SMGs+Shotguns+Melee | Rifles | Snipers+Machine guns
 function colsConfig(w) {
@@ -132,6 +143,7 @@ export default function App() {
   const [agentId, setAgentId] = useState(() => { try { return localStorage.getItem('stash.agent') || null } catch { return null } })
   const [showPicker, setShowPicker] = useState(() => { try { return !localStorage.getItem('stash.agent') } catch { return true } })
   const [pickSel, setPickSel] = useState(null) // uuid highlighted in the picker (not yet locked in)
+  const [phase, setPhase] = useState(null)     // lock-in transition: null|'sucking'|'void'|'exploding'
   const [weaponTarget, setWeaponTarget] = useState(null) // weapon uuid for the big modal
   const [buddyTarget, setBuddyTarget] = useState(null)    // weapon uuid we're attaching a buddy to
   const [skinSearch, setSkinSearch] = useState('')
@@ -600,7 +612,13 @@ export default function App() {
     if (!pickSel) return
     setAgentId(pickSel)
     try { localStorage.setItem('stash.agent', pickSel) } catch (e) { /* ignore */ }
-    setShowPicker(false)
+    const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduce) { setShowPicker(false); return }
+    // cinematic black-hole transition: suck → void → explode → reveal app
+    setPhase('sucking')
+    setTimeout(() => { setPhase('void'); setShowPicker(false) }, 640)   // collapse done → drop picker, app behind
+    setTimeout(() => { setPhase('exploding') }, 860)                    // beat of black, then burst
+    setTimeout(() => { setPhase(null) }, 1480)                          // overlay gone, app interactive
   }
   const openPicker = () => { setPickSel(agentId || pickSel || (agents[0] && agents[0].uuid) || null); setShowPicker(true) }
 
@@ -861,7 +879,7 @@ export default function App() {
         }
       : {}
     return (
-      <div className="apick" role="dialog" aria-label="Výběr agenta">
+      <div className={'apick' + (phase === 'sucking' ? ' apick--leaving' : '')} role="dialog" aria-label="Výběr agenta">
         <div className="apick-stage" style={stageStyle}>
           {pickAgent && pickAgent.background && <img className="apick-bg" src={pickAgent.background} alt="" aria-hidden="true" />}
           {pickAgent
@@ -895,10 +913,25 @@ export default function App() {
     )
   }
 
+  // ---- cinematic lock-in transition overlay (black hole → explosion) ----
+  const renderTransition = () => {
+    const acc = brightestHex(agent || pickAgent)
+    return (
+      <div className={'xtion xtion--' + phase} style={{ '--ax': acc }} aria-hidden="true">
+        <div className="xtion-hole" />
+        <div className="xtion-burst" />
+        <div className="xtion-ring" />
+      </div>
+    )
+  }
+
   return (
     <>
       {/* agent picking screen — shown on first load / when reopened */}
       {showPicker && renderPicker()}
+
+      {/* cinematic black-hole → explosion transition after LOCK IN */}
+      {phase && renderTransition()}
 
       {/* big intro logo — fixed, shrinks into top bar on scroll */}
       <div ref={heroStampRef} className="hero-stamp">

@@ -293,6 +293,39 @@
     .apick-grid{grid-template-columns:repeat(auto-fill,minmax(52px,1fr))}
   }
 
+  /* ---- lock-in transition: picker gets sucked into the black hole ---- */
+  .apick--leaving{animation:apickSuck .64s cubic-bezier(.55,0,.95,.45) forwards;transform-origin:center;pointer-events:none}
+  @keyframes apickSuck{to{transform:scale(.04) rotate(200deg);opacity:0}}
+  .apick--leaving .apick-portrait{animation:portraitSuck .64s cubic-bezier(.55,0,.95,.45) forwards}
+  @keyframes portraitSuck{to{transform:scale(.2) rotate(360deg);opacity:0}}
+
+  /* ---- black hole + explosion overlay ---- */
+  .xtion{position:fixed;inset:0;z-index:300;display:grid;place-items:center;overflow:hidden;pointer-events:auto;background:transparent}
+  .xtion-hole{width:150vmax;height:150vmax;border-radius:50%;transform:scale(0);will-change:transform,opacity;
+    background:radial-gradient(circle, #000 56%, rgba(0,0,0,.9) 72%, transparent 100%)}
+  .xtion-burst{position:absolute;width:70vmax;height:70vmax;border-radius:50%;transform:scale(0);opacity:0;will-change:transform,opacity;mix-blend-mode:screen;
+    background:radial-gradient(circle, #fff 0%, var(--ax,#2E8BA0) 16%, color-mix(in srgb,var(--ax,#2E8BA0) 70%,transparent) 34%, transparent 60%)}
+  .xtion-ring{position:absolute;width:30vmax;height:30vmax;border-radius:50%;transform:scale(0);opacity:0;will-change:transform,opacity;
+    border:3px solid var(--ax,#2E8BA0);box-shadow:0 0 40px 6px var(--ax,#2E8BA0)}
+
+  /* phase: sucking — void grows from the centre and swallows the screen */
+  .xtion--sucking .xtion-hole{animation:holeGrow .64s cubic-bezier(.5,0,.9,.45) forwards}
+  @keyframes holeGrow{from{transform:scale(0)}to{transform:scale(1)}}
+  /* phase: void — full black beat */
+  .xtion--void .xtion-hole{transform:scale(1)}
+  /* phase: exploding — burst bursts out, void clears to reveal the app */
+  .xtion--exploding .xtion-hole{animation:holeClear .5s ease-out forwards}
+  @keyframes holeClear{0%{transform:scale(1);opacity:1}100%{transform:scale(1.25);opacity:0}}
+  .xtion--exploding .xtion-burst{animation:burst .6s cubic-bezier(.2,.7,.3,1) forwards}
+  @keyframes burst{0%{transform:scale(0);opacity:1}55%{opacity:1}100%{transform:scale(3.4);opacity:0}}
+  .xtion--exploding .xtion-ring{animation:ringOut .62s cubic-bezier(.15,.7,.25,1) forwards}
+  @keyframes ringOut{0%{transform:scale(0);opacity:.95}70%{opacity:.7}100%{transform:scale(5);opacity:0}}
+
+  @media(max-width:1023px){
+    .xtion-hole{width:180vmax;height:180vmax}
+    .xtion-burst{width:90vmax;height:90vmax}
+  }
+
   .loading{padding:40px;text-align:center;color:var(--ink-soft)}
   .empty{width:100%;text-align:center;padding:34px 20px;color:var(--ink-soft)}
   .empty h3{font-family:"Space Grotesk";color:var(--ink);font-size:20px;margin:0 0 8px}
