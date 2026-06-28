@@ -23,6 +23,10 @@ const fmt = (n) => (n || 0).toLocaleString('cs-CZ').replace(/\s/g, ' ')
 const weightFor = (name) => WEIGHT[name] || 1
 const skinImageUrl = (s, ci, w) => { if (!s) return w.img; if (s.isStandard) return w.img; const c = s.chromas[ci]; return (c && c.img) || s.img || w.img }
 
+// agent colors come as an array of 8-digit hex strings (RRGGBBAA); build CSS hex from them
+const agentHex = (c) => (c ? '#' + c : '#1F2326')
+const agentColors = (a) => (a && a.colors && a.colors.length ? a.colors : ['1F2326FF', '0F1419FF'])
+
 // column layout — mirrors Valorant: Sidearms | SMGs+Shotguns+Melee | Rifles | Snipers+Machine guns
 function colsConfig(w) {
   if (w >= 1024) return [
@@ -123,6 +127,11 @@ export default function App() {
   const [inv, setInv] = useState('my')
   const [items, setItems] = useState({ my: {}, dream: {} })
   const [featuredMap, setFeaturedMap] = useState({ my: null, dream: null })
+  // ---- agent select (VALORANT-style picking screen) ----
+  const [agents, setAgents] = useState([])
+  const [agentId, setAgentId] = useState(() => { try { return localStorage.getItem('stash.agent') || null } catch { return null } })
+  const [showPicker, setShowPicker] = useState(() => { try { return !localStorage.getItem('stash.agent') } catch { return true } })
+  const [pickSel, setPickSel] = useState(null) // uuid highlighted in the picker (not yet locked in)
   const [weaponTarget, setWeaponTarget] = useState(null) // weapon uuid for the big modal
   const [buddyTarget, setBuddyTarget] = useState(null)    // weapon uuid we're attaching a buddy to
   const [skinSearch, setSkinSearch] = useState('')
@@ -163,6 +172,22 @@ export default function App() {
       }
     })()
     return () => { alive = false }
+  }, [])
+
+  // load playable agents once
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      try {
+        const r = await fetch(`${API}/agents?isPlayableCharacter=true`)
+        const list = ((await r.json()).data || []).filter((a) => a.isPlayableCharacter && a.fullPortrait)
+        if (!alive) return
+        setAgents(list)
+        setPickSel((prev) => prev || agentId || (list[0] && list[0].uuid) || null)
+      } catch (e) { /* offline: picker just shows empty roster */ }
+    })()
+    return () => { alive = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // track viewport width
@@ -568,6 +593,17 @@ export default function App() {
 
   const featuredTint = featuredW ? db.skins[active[featuredW.uuid].skinUuid].tint : '#C9BA98'
 
+  // ---- agent select derived values + handlers ----
+  const agent = agents.find((a) => a.uuid === agentId) || null          // active (locked-in) agent
+  const pickAgent = agents.find((a) => a.uuid === pickSel) || null       // highlighted in the picker
+  const lockIn = () => {
+    if (!pickSel) return
+    setAgentId(pickSel)
+    try { localStorage.setItem('stash.agent', pickSel) } catch (e) { /* ignore */ }
+    setShowPicker(false)
+  }
+  const openPicker = () => { setPickSel(agentId || pickSel || (agents[0] && agents[0].uuid) || null); setShowPicker(true) }
+
   // photo/video preview with a centered hover-to-show stop control, shared by the equipped-skin showcase and the confirm popup
   const renderMedia = (skin, photoUrl, st, opts = {}) => {
     const { tab, setTab, vIdx, setVIdx, playing, setPlaying, vRef } = st
@@ -813,8 +849,57 @@ export default function App() {
     </div>
   )
 
+  // ---- VALORANT-style agent picking screen ----
+  const renderPicker = () => {
+    const cols = pickAgent ? agentColors(pickAgent) : null
+    const stageStyle = cols
+      ? {
+          '--a0': agentHex(cols[0]),
+          '--a1': agentHex(cols[1] || cols[0]),
+          '--a2': agentHex(cols[Math.min(2, cols.length - 1)]),
+          '--a3': agentHex(cols[cols.length - 1]),
+        }
+      : {}
+    return (
+      <div className="apick" role="dialog" aria-label="Výběr agenta">
+        <div className="apick-stage" style={stageStyle}>
+          {pickAgent && pickAgent.background && <img className="apick-bg" src={pickAgent.background} alt="" aria-hidden="true" />}
+          {pickAgent
+            ? (
+              <>
+                <img className="apick-portrait" src={pickAgent.fullPortrait} alt={pickAgent.displayName} />
+                <div className="apick-info">
+                  <div className="apick-role">
+                    {pickAgent.role && pickAgent.role.displayIcon && <img src={pickAgent.role.displayIcon} alt="" />}
+                    <span>{pickAgent.role ? pickAgent.role.displayName : 'Agent'}</span>
+                  </div>
+                  <h1 className="apick-name">{pickAgent.displayName}</h1>
+                  <button className="apick-lock" onClick={lockIn}>LOCK IN</button>
+                </div>
+              </>
+            )
+            : <div className="apick-empty">{agents.length ? 'Vyber agenta' : 'Načítám agenty…'}</div>}
+        </div>
+        <div className="apick-roster">
+          <div className="apick-roster-head">Agenti <span>{agents.length}</span></div>
+          <div className="apick-grid">
+            {agents.map((a) => (
+              <button key={a.uuid} className={'apick-cell' + (a.uuid === pickSel ? ' on' : '')}
+                title={a.displayName} onClick={() => setPickSel(a.uuid)}>
+                <img src={a.displayIcon} alt={a.displayName} />
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
+      {/* agent picking screen — shown on first load / when reopened */}
+      {showPicker && renderPicker()}
+
       {/* big intro logo — fixed, shrinks into top bar on scroll */}
       <div ref={heroStampRef} className="hero-stamp">
         <img src="/stash-logo.png" alt="STASH" />
@@ -825,7 +910,8 @@ export default function App() {
         <div className="top" ref={topRef}>
           <div className="brand">
             <img src="/stash-logo.png" alt="STASH" className="logo-svg" />
-            <span className="sub">tvoje Valorant sbírka</span>
+            {agent && <button className="agent-chip" onClick={openPicker} title="Změnit agenta"><img src={agent.displayIcon} alt={agent.displayName} /></button>}
+            <span className="sub">{agent ? agent.displayName : 'tvoje Valorant sbírka'}</span>
           </div>
           <div className="seg">
             <button className={inv === 'my' ? 'on' : ''} onClick={() => setInv('my')}>Můj inventář</button>
