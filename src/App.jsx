@@ -622,10 +622,10 @@ export default function App() {
     // cinematic transition: background vanishes → agent alone → sucked into void → explosion → app
     transRef.current = true                                             // pause bubble physics for the duration
     setPhase('bgout')                                                   // chrome/atmosphere fades, portrait stays
-    setTimeout(() => { setPhase('sucking') }, 200)                      // only the portrait gets pulled in
-    setTimeout(() => { setPhase('void'); setShowPicker(false) }, 740)   // collapse done → drop picker, app behind
-    setTimeout(() => { setPhase('exploding') }, 940)                    // beat of black, then burst
-    setTimeout(() => { setPhase(null); transRef.current = false }, 1560) // overlay gone, app interactive, physics resumes
+    setTimeout(() => { setPhase('sucking') }, 200)                      // only the portrait gets pulled in (fast)
+    setTimeout(() => { setPhase('void'); setShowPicker(false) }, 560)   // collapse done → drop picker, app behind
+    setTimeout(() => { setPhase('exploding') }, 670)                    // ~110ms black beat, then burst
+    setTimeout(() => { setPhase(null); transRef.current = false }, 1230) // overlay gone, app interactive, physics resumes
   }
   const openPicker = () => { setPickSel(agentId || pickSel || (agents[0] && agents[0].uuid) || null); setShowPicker(true) }
 
