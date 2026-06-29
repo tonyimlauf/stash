@@ -984,36 +984,49 @@ export default function App() {
       <div ref={landingRef} className="landing" aria-hidden="true">
         <svg className="landing-ring" viewBox="0 0 200 200">
           <defs>
-            <filter id="blobGlow" x="-60%" y="-60%" width="220%" height="220%">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="2.6" result="b" />
-              <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-            </filter>
-            {/* annulus = the tube interior; blobs are clipped to it so they stay in the pipe */}
-            <clipPath id="tubeClip">
-              <path clipRule="evenodd" d="M5,100 a95,95 0 1,0 190,0 a95,95 0 1,0 -190,0 M27,100 a73,73 0 1,0 146,0 a73,73 0 1,0 -146,0" />
-            </clipPath>
+            <filter id="fHalo" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="6.5" /></filter>
+            <filter id="fTrail" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="3.8" /></filter>
+            <filter id="fCore" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="1.1" /></filter>
           </defs>
-          {/* glass tube wall + faint rims */}
-          <circle className="tube-wall" cx="100" cy="100" r={RING_R} />
-          <circle className="tube-rim" cx="100" cy="100" r="95" />
-          <circle className="tube-rim" cx="100" cy="100" r="73" />
-          {/* flowing liquid blobs, clipped & glowing */}
-          <g clipPath="url(#tubeClip)" filter="url(#blobGlow)">
-            {BLOBS.map((b, i) => {
-              if (reduceMo) {
-                // static: park 5 blobs evenly at 72° (no animation)
-                const a = (-90 + i * 72) * Math.PI / 180
-                return <ellipse key={i} className="blob" rx={b.rx} ry={b.ry} cx={100 + RING_R * Math.cos(a)} cy={100 + RING_R * Math.sin(a)} />
-              }
+          {/* thin glassy track */}
+          <circle className="track" cx="100" cy="100" r={RING_R} />
+          {BLOBS.map((b, i) => {
+            const begin = -(i / BLOBS.length) * RING_DUR
+            const motion = (lag) => (
+              <animateMotion dur={`${RING_DUR}s`} begin={`${begin + lag}s`} repeatCount="indefinite" rotate="auto" calcMode="linear" path={RING_PATH} />
+            )
+            if (reduceMo) {
+              const a = (-90 + i * 72) * Math.PI / 180
+              const cx = 100 + RING_R * Math.cos(a), cy = 100 + RING_R * Math.sin(a)
               return (
-                <ellipse key={i} className="blob" rx={b.rx} ry={b.ry} cx="0" cy="0">
-                  <animateMotion dur={`${RING_DUR}s`} begin={`-${(i / BLOBS.length) * RING_DUR}s`} repeatCount="indefinite" rotate="auto" calcMode="linear" path={RING_PATH} />
-                  <animate attributeName="rx" values={`${b.rx};${b.rx + b.br};${b.rx}`} dur={`${3.2 + i * 0.5}s`} repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" />
-                  <animate attributeName="ry" values={`${b.ry};${b.ry + b.br * 0.7};${b.ry}`} dur={`${3.8 + i * 0.4}s`} repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" />
-                </ellipse>
+                <g key={i}>
+                  <ellipse className="blob-halo" filter="url(#fHalo)" rx={b.rx * 1.15} ry={b.ry * 1.15} cx={cx} cy={cy} />
+                  <ellipse className="blob-core" filter="url(#fCore)" rx={b.rx * 0.6} ry={b.ry * 0.6} cx={cx} cy={cy} />
+                </g>
               )
-            })}
-          </g>
+            }
+            return (
+              <g key={i}>
+                {/* glowing trail behind the blob (time-lagged ghosts) */}
+                {[0.022, 0.05, 0.085].map((lag, j) => (
+                  <ellipse key={'t' + j} className="blob-trail" filter="url(#fTrail)"
+                    rx={b.rx * (1 - 0.16 * (j + 1))} ry={b.ry * (1 - 0.16 * (j + 1))} cx="0" cy="0"
+                    style={{ opacity: 0.3 - 0.08 * j }}>
+                    {motion(lag * RING_DUR)}
+                  </ellipse>
+                ))}
+                {/* soft agent-color halo / bloom */}
+                <ellipse className="blob-halo" filter="url(#fHalo)" rx={b.rx * 1.15} ry={b.ry * 1.15} cx="0" cy="0">
+                  {motion(0)}
+                  <animate attributeName="rx" values={`${b.rx * 1.15};${(b.rx + b.br) * 1.15};${b.rx * 1.15}`} dur={`${3.2 + i * 0.5}s`} repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" />
+                </ellipse>
+                {/* bright core */}
+                <ellipse className="blob-core" filter="url(#fCore)" rx={b.rx * 0.6} ry={b.ry * 0.6} cx="0" cy="0">
+                  {motion(0)}
+                </ellipse>
+              </g>
+            )
+          })}
         </svg>
         {agent && (
           <>

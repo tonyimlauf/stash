@@ -43,13 +43,16 @@
 
   /* ---- agent-themed landing decor (first screen): neon ring + stickers ---- */
   .landing{position:fixed;inset:0;z-index:58;pointer-events:none;display:grid;place-items:center;will-change:transform,opacity}
-  /* liquid-capsule ring: a glass tube with 5 agent-colored blobs flowing clockwise.
-     Soft outer halo via drop-shadow; the blob glow itself is an SVG feGaussianBlur. */
+  /* liquid-light ring: 5 bright agent-colored light-orbs flow clockwise around a
+     thin glassy track. No tube — the glow is the star (SVG feGaussianBlur halos
+     + trails). Outer drop-shadow adds an extra bloom. */
   .landing-ring{width:clamp(340px,50vw,620px);height:auto;display:block;overflow:visible;
-    filter:drop-shadow(0 0 12px color-mix(in srgb, var(--agent,#E8A33D) 50%, transparent))}
-  .landing-ring .tube-wall{fill:none;stroke:rgba(8,12,16,.5);stroke-width:22}
-  .landing-ring .tube-rim{fill:none;stroke:rgba(255,255,255,.16);stroke-width:1}
-  .landing-ring .blob{fill:var(--agent,#E8A33D);opacity:.72}
+    filter:drop-shadow(0 0 7px color-mix(in srgb, var(--agent,#E8A33D) 55%, transparent))}
+  .landing-ring .track{fill:none;stroke:color-mix(in srgb, var(--agent,#E8A33D) 26%, transparent);stroke-width:2.5}
+  .landing-ring .blob-halo{fill:var(--agent,#E8A33D);opacity:.6}
+  .landing-ring .blob-trail{fill:var(--agent,#E8A33D)}
+  /* bright, slightly-whitened core so the orbs read as luminous liquid */
+  .landing-ring .blob-core{fill:color-mix(in srgb, var(--agent,#E8A33D) 42%, #fff)}
   /* agent imagery scattered as slightly-rotated decals around the ring */
   .landing-sticker{position:absolute;object-fit:cover;border-radius:16px;background:rgba(255,255,255,.55);
     border:3px solid #fff;box-shadow:0 10px 24px -6px rgba(var(--shadow),.5);will-change:transform}
